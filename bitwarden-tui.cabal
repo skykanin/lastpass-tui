@@ -17,7 +17,7 @@ maintainer:          3789764+skykanin@users.noreply.github.com
 -- category:
 extra-source-files:  CHANGELOG.md
 
-executable bitwarden-tui
+executable bwt
   main-is:             Main.hs
   -- other-modules:
   -- other-extensions:
