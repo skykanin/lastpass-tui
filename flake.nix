@@ -1,6 +1,6 @@
 {
   description = "Flake description";
-  edition = 201909;
+  # edition = 201909;
   outputs = { self, nixpkgs }: {
     # setup the devShell for x86_64-linux.
     devShell.x86_64-linux =
