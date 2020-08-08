@@ -14,7 +14,9 @@
           hs.ghcid
           binutils-unwrapped
         ];
-        libraries = [];
+        libraries = [
+          zlib
+        ];
         libraryPath = "${makeLibraryPath libraries}";
       in
         pkgs.runCommand "shell" {
