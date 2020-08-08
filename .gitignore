@@ -1,4 +1,5 @@
 .direnv/
+flake.lock
 dist
 dist-*
 cabal-dev
