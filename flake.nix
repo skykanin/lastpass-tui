@@ -1,6 +1,5 @@
 {
-  description = "Flake description";
-  # edition = 201909;
+  description = "Dev environment for bitwarden-tui";
   outputs = { self, nixpkgs }: {
     # setup the devShell for x86_64-linux.
     devShell.x86_64-linux =
