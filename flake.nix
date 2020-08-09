@@ -14,6 +14,7 @@
           binutils-unwrapped
         ];
         libraries = [
+          bitwarden-cli
           zlib
         ];
         libraryPath = "${makeLibraryPath libraries}";
