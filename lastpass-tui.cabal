@@ -31,7 +31,11 @@ executable lpt
 library lpt-lib
   import:              shared-properties
   build-depends:       base == 4.*
+                     , aeson >= 1.5.3.0
                      , brick >= 0.55
-  exposed-modules:     Main
+                     , bytestring >= 0.10.10.1
+                     , pretty-simple
+                     , process >= 1.6.10.0
+  exposed-modules:     CLI
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
