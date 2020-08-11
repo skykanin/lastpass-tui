@@ -1,4 +1,7 @@
 module Main where
 
+
+import           CLI                            ( startSession )
+
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = startSession >> return ()
