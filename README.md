@@ -18,7 +18,10 @@ Run `nix develop` to enter the project environment.
 
 This adds everything listed in the `flake.nix` file to your path.
 ### Run
-`cabal run exe:bwt`
+On the first run you will be asked to `cabal update`.
+
+After that you can run the project with
+`cabal run`
 
 ### Build
 `cabal build [...opts]`
