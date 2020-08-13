@@ -1,5 +1,5 @@
 {
-  description = "Dev environment for bitwarden-tui";
+  description = "Dev environment for lastpass-tui";
   outputs = { self, nixpkgs }: {
     # setup the devShell for x86_64-linux.
     devShell.x86_64-linux =
@@ -8,13 +8,14 @@
         inherit (lib) makeLibraryPath;
         hs = haskell.packages.ghc884;
         tools = [
+          hs.brittany
           hs.ghc
           hs.cabal-install
           hs.ghcid
           binutils-unwrapped
         ];
         libraries = [
-          bitwarden-cli
+          lastpass-cli
           zlib
         ];
         libraryPath = "${makeLibraryPath libraries}";
