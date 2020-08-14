@@ -22,7 +22,7 @@ common shared-properties
 executable lpt
   import:              shared-properties
   build-depends:       base == 4.*
-                     , brick >= 0.55
+                     , brick
                      , lpt-lib
   main-is:             Main.hs
   hs-source-dirs:      src
@@ -31,11 +31,10 @@ executable lpt
 library lpt-lib
   import:              shared-properties
   build-depends:       base == 4.*
-                     , aeson >= 1.5.3.0
-                     , brick >= 0.55
-                     , bytestring >= 0.10.10.1
-                     , pretty-simple
-                     , process >= 1.6.10.0
+                     , aeson
+                     , brick
+                     , bytestring
+                     , process
   exposed-modules:     CLI
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
