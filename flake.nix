@@ -1,9 +1,14 @@
 {
-  description = "Dev environment for lastpass-tui";
+  description = "Package build and dev environment for lastpass-tui";
   outputs = { self, nixpkgs }: {
-    # setup the devShell for x86_64-linux.
+    # setup derivation for x86_64-linux
+    defaultPackage.x86_64-linux =
+      with import nixpkgs { system = "x86_64-linux"; };
+      haskell.packages.ghc884.callCabal2nix "lastpass-tui" self {};
+    
+    # setup devShell for x86_64-linux.
     devShell.x86_64-linux =
-      with nixpkgs.legacyPackages.x86_64-linux;
+      with import nixpkgs { system = "x86_64-linux"; };
       let
         inherit (lib) makeLibraryPath;
         hs = haskell.packages.ghc884;
