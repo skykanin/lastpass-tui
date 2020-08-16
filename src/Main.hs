@@ -1,6 +1,13 @@
 module Main where
 
-import           CLI                            ( startSession )
+import           CLI                            ( startSession
+                                                , getItems
+                                                , endSession
+                                                )
 
 main :: IO ()
-main = startSession >> return ()
+main = do
+  _     <- startSession
+  items <- getItems
+  print items
+  endSession
