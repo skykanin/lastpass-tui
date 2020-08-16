@@ -35,6 +35,9 @@ library lpt-lib
                      , brick
                      , bytestring
                      , process
-  exposed-modules:     CLI
+                     , regex
+                     , text
+                     , unordered-containers
+  exposed-modules:     CLI, Parse
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
