@@ -1,3 +1,12 @@
+{- |
+   Module      : CLI
+   License     : GNU GPL, version 3 or above
+   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
+   Stability   : alpha
+   Portability : portable
+
+Provides all the commands wrapping the lastpass-cli
+-}
 module CLI
   ( endSession
   , startSession
@@ -18,10 +27,10 @@ import           System.Process                 ( callProcess
                                                 , readProcessWithExitCode
                                                 , readProcess
                                                 )
-import           Parse                          ( Item
-                                                , parseIds
+import           Parse.Decode                   ( parseIds
                                                 , parseItem
                                                 )
+import           Parse.Types                    ( Item )
 
 data User = User
   { _email :: String,
