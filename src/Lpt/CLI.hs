@@ -11,6 +11,7 @@ module CLI
   ( endSession
   , startSession
   , getItems
+  , setItem
   )
 where
 
@@ -30,7 +31,10 @@ import           System.Process                 ( callProcess
 import           Parse.Decode                   ( parseIds
                                                 , parseItem
                                                 )
-import           Parse.Types                    ( Item )
+import           Parse.Encode                   ( write )
+import           Parse.Types                    ( Item
+                                                , getId
+                                                )
 
 data User = User
   { _email :: String,
@@ -101,3 +105,11 @@ getJsonItems = idList >>= traverse getJsonItem
 
 getItems :: IO [Either String Item]
 getItems = map parseItem <$> getJsonItems
+
+-- | TODO: maybe return error on fail
+setItem :: Item -> IO ()
+setItem item = do
+  _ <- readProcess "lpass"
+                   ["edit", "--non-interactive", (getId item)]
+                   (write item)
+  return ()
