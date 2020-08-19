@@ -1,7 +1,17 @@
+{- |
+   Module      : CLI
+   License     : GNU GPL, version 3 or above
+   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
+   Stability   : alpha
+   Portability : portable
+
+Provides all the commands wrapping the lastpass-cli
+-}
 module CLI
   ( endSession
   , startSession
   , getItems
+  , setItem
   )
 where
 
@@ -17,6 +27,13 @@ import           System.Exit                    ( ExitCode(..) )
 import           System.Process                 ( callProcess
                                                 , readProcessWithExitCode
                                                 , readProcess
+                                                )
+import           Parse.Decode                   ( parseIds
+                                                , parseItem
+                                                )
+import           Parse.Encode                   ( write )
+import           Parse.Types                    ( Item
+                                                , getId
                                                 )
 
 data User = User
@@ -58,7 +75,9 @@ checkLoginStatus = do
 -- | Attempt user login and return appropriate exit code
 loginUser :: User -> IO ExitCode
 loginUser (User email passwd) = do
-  (exit, _, _) <- readProcessWithExitCode "lpass" ["login", email] passwd
+  (exit, _, _) <- readProcessWithExitCode "lpass"
+                                          ["login", "--trust", email]
+                                          passwd
   return exit
 
 -- | Start a lastpass session and login user
@@ -75,5 +94,22 @@ startSession = do
 endSession :: IO ()
 endSession = callProcess "lpass" ["logout", "--force"]
 
-getItems :: IO String
-getItems = readProcess "lpass" ["ls"] ""
+showItems :: IO String
+showItems = readProcess "lpass" ["ls"] ""
+
+getJsonItems :: IO [String]
+getJsonItems = idList >>= traverse getJsonItem
+ where
+  getJsonItem iden = readProcess "lpass" ["show", "--json", iden] ""
+  idList = parseIds <$> showItems
+
+getItems :: IO [Either String Item]
+getItems = map parseItem <$> getJsonItems
+
+-- | TODO: maybe return error on fail
+setItem :: Item -> IO ()
+setItem item = do
+  _ <- readProcess "lpass"
+                   ["edit", "--non-interactive", (getId item)]
+                   (write item)
+  return ()
