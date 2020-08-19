@@ -15,6 +15,7 @@ module Parse.Types
   , Login(..)
   , Note(..)
   , Item(..)
+  , getId
   )
 where
 
@@ -28,7 +29,6 @@ import           GHC.Generics
 data Login = Login
   { _id :: String
   , _name :: String
-  , _fullname :: String
   , _username :: String
   , _password :: String
   , _group :: String
@@ -91,3 +91,8 @@ parseHashMap = fromList . map splitOn . lines
 splitOn :: String -> (String, String)
 splitOn str = (takeWhile notColon str, tail $ dropWhile notColon str)
   where notColon = not . (== ':')
+
+getId :: Item -> String
+getId (MkLogin   login  ) = _id (login :: Login)
+getId (MkComplex complex) = _id (complex :: Complex)
+getId (MkNote    note   ) = _id (note :: Note)
