@@ -38,6 +38,9 @@ library lpt-lib
                      , regex
                      , text
                      , unordered-containers
-  exposed-modules:     CLI, Parse
+  exposed-modules:     CLI
+                     , Parse.Encode
+                     , Parse.Decode
+                     , Parse.Types
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
