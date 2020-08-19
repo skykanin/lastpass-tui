@@ -8,10 +8,12 @@
 Provides all the commands wrapping the lastpass-cli
 -}
 module CLI
-  ( endSession
+  ( User(..)
+  , endSession
   , startSession
   , getItems
   , setItem
+  , getUser
   )
 where
 
@@ -81,14 +83,14 @@ loginUser (User email passwd) = do
   return exit
 
 -- | Start a lastpass session and login user
-startSession :: IO ExitCode
-startSession = do
+startSession :: User -> IO ExitCode
+startSession user = do
   status <- checkLoginStatus
   if status
     then return ExitSuccess
     else do
-      setEnv "LPASS_AGENT_TIMEOUT" "0" -- stop agent from timing out session
-      user <- getUser
+      setEnv "LPASS_AGENT_TIMEOUT"    "0" -- stop agent from timing out session
+      setEnv "LPASS_DISABLE_PINENTRY" "1" -- stop using pinentry for password prompt
       loginUser user
 
 endSession :: IO ()
@@ -97,14 +99,14 @@ endSession = callProcess "lpass" ["logout", "--force"]
 showItems :: IO String
 showItems = readProcess "lpass" ["ls"] ""
 
-getJsonItems :: IO [String]
-getJsonItems = idList >>= traverse getJsonItem
+getJsonItems :: String -> IO [String]
+getJsonItems password = idList >>= traverse (getJsonItem password)
  where
-  getJsonItem iden = readProcess "lpass" ["show", "--json", iden] ""
+  getJsonItem passwd iden = readProcess "lpass" ["show", "--json", iden] passwd
   idList = parseIds <$> showItems
 
-getItems :: IO [Either String Item]
-getItems = map parseItem <$> getJsonItems
+getItems :: String -> IO [Either String Item]
+getItems password = map parseItem <$> getJsonItems password
 
 -- | TODO: maybe return error on fail
 setItem :: Item -> IO ()
