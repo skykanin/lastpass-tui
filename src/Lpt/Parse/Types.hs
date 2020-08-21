@@ -16,6 +16,7 @@ module Parse.Types
   , Note(..)
   , Item(..)
   , getId
+  , getName
   )
 where
 
@@ -96,3 +97,8 @@ getId :: Item -> String
 getId (MkLogin   login  ) = _id (login :: Login)
 getId (MkComplex complex) = _id (complex :: Complex)
 getId (MkNote    note   ) = _id (note :: Note)
+
+getName :: Item -> String
+getName (MkLogin   login  ) = _name (login :: Login)
+getName (MkComplex complex) = _name (complex :: Complex)
+getName (MkNote    note   ) = _name (note :: Note)

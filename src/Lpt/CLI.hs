@@ -11,6 +11,8 @@ module CLI
   ( User(..)
   , endSession
   , startSession
+  , addItem
+  , deleteItem
   , getItems
   , setItem
   , getUser
@@ -36,6 +38,7 @@ import           Parse.Decode                   ( parseIds
 import           Parse.Encode                   ( write )
 import           Parse.Types                    ( Item
                                                 , getId
+                                                , getName
                                                 )
 
 data User = User
@@ -115,3 +118,19 @@ setItem item = do
                    ["edit", "--non-interactive", (getId item)]
                    (write item)
   return ()
+
+-- | If item name is not unique process fails
+deleteItem :: String -> IO ExitCode
+deleteItem itemId = do
+  (exit, _, _) <- readProcessWithExitCode "lpass" ["rm", itemId] ""
+  return exit
+
+-- | Write item to the vault using the name field as the entry name.
+-- id field is ignored, because one is generated when the item is created
+addItem :: Item -> IO ExitCode
+addItem item = do
+  (exit, _, _) <- readProcessWithExitCode
+    "lpass"
+    ["add", "--non-interactive", (getName item)]
+    (write item)
+  return exit
