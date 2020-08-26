@@ -14,7 +14,7 @@ module CLI
   , addItem
   , deleteItem
   , getItems
-  , setItem
+  , editItem
   , getUser
   )
 where
@@ -112,8 +112,8 @@ getItems :: String -> IO [Either String Item]
 getItems password = map parseItem <$> getJsonItems password
 
 -- | TODO: maybe return error on fail
-setItem :: Item -> IO ()
-setItem item = do
+editItem :: Item -> IO ()
+editItem item = do
   _ <- readProcess "lpass"
                    ["edit", "--non-interactive", (getId item)]
                    (write item)
