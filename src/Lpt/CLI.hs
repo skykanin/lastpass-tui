@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : CLI
    License     : GNU GPL, version 3 or above
@@ -14,12 +15,15 @@ module CLI
   , addItem
   , deleteItem
   , getItems
+  , getJsonItem
   , editItem
   , getUser
   )
 where
 
 import           Control.Exception              ( bracket_ )
+import           Data.Aeson
+import           GHC.Generics
 import           System.IO                      ( hFlush
                                                 , hGetEcho
                                                 , hSetEcho
@@ -42,10 +46,12 @@ import           Parse.Types                    ( Item
                                                 )
 
 data User = User
-  { _email :: String,
-    _passwd :: String
+  { email :: String
+  , passwd :: String
   }
-  deriving (Eq, Show)
+  deriving (Generic, Eq, Show)
+
+instance FromJSON User
 
 withEcho :: Bool -> IO a -> IO a
 withEcho echo action = do
@@ -79,10 +85,10 @@ checkLoginStatus = do
 
 -- | Attempt user login and return appropriate exit code
 loginUser :: User -> IO ExitCode
-loginUser (User email passwd) = do
+loginUser (User mail pass) = do
   (exit, _, _) <- readProcessWithExitCode "lpass"
-                                          ["login", "--trust", email]
-                                          passwd
+                                          ["login", "--trust", mail]
+                                          pass
   return exit
 
 -- | Start a lastpass session and login user
@@ -104,9 +110,10 @@ showItems = readProcess "lpass" ["ls"] ""
 
 getJsonItems :: String -> IO [String]
 getJsonItems password = idList >>= traverse (getJsonItem password)
- where
-  getJsonItem passwd iden = readProcess "lpass" ["show", "--json", iden] passwd
-  idList = parseIds <$> showItems
+  where idList = parseIds <$> showItems
+
+getJsonItem :: String -> String -> IO String
+getJsonItem pass iden = readProcess "lpass" ["show", "--json", iden] pass
 
 getItems :: String -> IO [Either String Item]
 getItems password = map parseItem <$> getJsonItems password
