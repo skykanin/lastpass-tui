@@ -1,6 +1,7 @@
 .direnv/
 .envrc
 result
+misc/testUser.json
 dist
 dist-*
 cabal-dev
