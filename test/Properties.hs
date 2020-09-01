@@ -18,6 +18,7 @@ import           Parse.Decode                   ( parseItem )
 import           Parse.Types
 import           System.Environment             ( getEnv )
 import           System.Exit                    ( ExitCode(..) )
+import           Test.QuickCheck                ( chooseInt )
 import           Test.QuickCheck.Arbitrary
 import           Test.Tasty
 import           Test.Tasty.QuickCheck
