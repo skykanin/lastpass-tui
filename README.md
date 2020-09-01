@@ -24,7 +24,11 @@ After that you can run the project with
 `cabal run`
 
 ### Build
+To build the project using cabal you can run
 `cabal build [...opts]`
+However if you want to build the executable through nix you can run
+`nix-build -A lastpass-tui.components.exes.lpt`
+The resulting executable will be under `./result/bin/lpt`
 
 ### Test
 To run the tests you first need to provide a test account. The template is given in
