@@ -53,7 +53,7 @@ test-suite properties
                      , aeson
                      , bytestring
                      , lpt-lib
-                     , QuickCheck
+                     , QuickCheck >= 2.14
                      , tasty
                      , tasty-quickcheck
                      , unordered-containers
