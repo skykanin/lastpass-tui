@@ -1,21 +1,40 @@
 {
   "nodes": {
-    "nixpkgs": {
+    "haskellNix": {
       "locked": {
-        "lastModified": 1596897294,
-        "narHash": "sha256-JOH5k3x4wrNXuVBM2OnAidB7x5+Kz5NVLx05nauTg00=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "37fd49b1988dd7764876118500216e006b765f0a",
+        "lastModified": 1598864800,
+        "narHash": "sha256-h55rg6R6kbe/Sa0lo/ONcL0xkO78/2mZqaIb+FYZUCY=",
+        "owner": "input-output-hk",
+        "repo": "haskell.nix",
+        "rev": "3250b6cc7b9502fbf89de5f535214cd8f6326205",
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "type": "indirect"
+        "owner": "input-output-hk",
+        "ref": "master",
+        "repo": "haskell.nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1597943282,
+        "narHash": "sha256-G/VQBlqO7YeFOSvn29RqdvABZxmQBtiRYVA6kjqWZ6o=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "c59ea8b8a0e7f927e7291c14ea6cd1bd3a16ff38",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "root": {
       "inputs": {
+        "haskellNix": "haskellNix",
         "nixpkgs": "nixpkgs"
       }
     }
