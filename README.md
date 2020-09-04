@@ -1,4 +1,7 @@
 # LastPass TUI
+[![GitHub issues by-label](https://img.shields.io/github/workflow/status/skykanin/lastpass-tui/Haskell%20CI?logo=GitHub&style=for-the-badge)](https://github.com/skykanin/lastpass-tui/actions?query=workflow%3A%22Haskell+CI%22)
+
+
 A terminal user interface for LastPass written in Haskell.
 
 ## Develop
@@ -16,7 +19,7 @@ Either run the `setup.sh` script or follow these steps manually:
 ### Start contributing!
 Run `nix develop` to enter the project environment.
 
-This adds everything listed in the `flake.nix` file to your path.
+This adds everything listed in the `flake.nix` files `devShell` attribute to your path.
 ### Run
 On the first run you will be asked to `cabal update`.
 
@@ -33,5 +36,5 @@ The resulting executable will be under `./result/bin/lpt`
 ### Test
 To run the tests you first need to provide a test account. The template is given in
 `misc/testUserTemplate.json`. The actual json filename is the same, but without the
-"template" suffix. Now simple run
+"template" suffix. Now simply run
 `cabal test`
