@@ -16,6 +16,10 @@ module Parse.Types
   , Note(..)
   , Item(..)
   , getId
+  , getGroup
+  , getName
+  , setGroup
+  , setId
   )
 where
 
@@ -34,14 +38,14 @@ data Login = Login
   , _group :: String
   , _url :: String
   , _note :: String
-  } deriving (Generic, Show)
+  } deriving (Eq, Generic, Show)
 
 data Note = Note
   { _id :: String
   , _name :: String
   , _group :: String
   , _note :: String
-  } deriving (Generic, Show)
+  } deriving (Eq, Generic, Show)
 
 -- | Represents any of the other item types which store
 -- | their data in the note field
@@ -50,14 +54,14 @@ data Complex = Complex
   , _name :: String
   , _group :: String
   , _note :: HashMap String String
-  } deriving (Generic, Show)
+  } deriving (Eq, Generic, Show)
 
 -- | Represents all the different types in the vault
 data Item =
     MkLogin Login
   | MkNote Note
   | MkComplex Complex
-  deriving Show
+  deriving (Eq, Show)
 
 instance FromJSON Login where
   parseJSON = underscoreParser
@@ -96,3 +100,23 @@ getId :: Item -> String
 getId (MkLogin   login  ) = _id (login :: Login)
 getId (MkComplex complex) = _id (complex :: Complex)
 getId (MkNote    note   ) = _id (note :: Note)
+
+setId :: String -> Item -> Item
+setId s (MkLogin   login  ) = MkLogin login { _id = s }
+setId s (MkComplex complex) = MkComplex complex { _id = s }
+setId s (MkNote    note   ) = MkNote note { _id = s }
+
+getGroup :: Item -> String
+getGroup (MkLogin   login  ) = _group (login :: Login)
+getGroup (MkComplex complex) = _group (complex :: Complex)
+getGroup (MkNote    note   ) = _group (note :: Note)
+
+setGroup :: String -> Item -> Item
+setGroup s (MkLogin   login  ) = MkLogin login { _group = s }
+setGroup s (MkComplex complex) = MkComplex complex { _group = s }
+setGroup s (MkNote    note   ) = MkNote note { _group = s }
+
+getName :: Item -> String
+getName (MkLogin   login  ) = _name (login :: Login)
+getName (MkComplex complex) = _name (complex :: Complex)
+getName (MkNote    note   ) = _name (note :: Note)

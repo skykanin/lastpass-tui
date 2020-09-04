@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : CLI
    License     : GNU GPL, version 3 or above
@@ -11,13 +12,18 @@ module CLI
   ( User(..)
   , endSession
   , startSession
+  , addItem
+  , deleteItem
   , getItems
-  , setItem
+  , getJsonItem
+  , editItem
   , getUser
   )
 where
 
 import           Control.Exception              ( bracket_ )
+import           Data.Aeson
+import           GHC.Generics
 import           System.IO                      ( hFlush
                                                 , hGetEcho
                                                 , hSetEcho
@@ -36,13 +42,16 @@ import           Parse.Decode                   ( parseIds
 import           Parse.Encode                   ( write )
 import           Parse.Types                    ( Item
                                                 , getId
+                                                , getName
                                                 )
 
 data User = User
-  { _email :: String,
-    _passwd :: String
+  { email :: String
+  , passwd :: String
   }
-  deriving (Eq, Show)
+  deriving (Generic, Eq, Show)
+
+instance FromJSON User
 
 withEcho :: Bool -> IO a -> IO a
 withEcho echo action = do
@@ -76,10 +85,10 @@ checkLoginStatus = do
 
 -- | Attempt user login and return appropriate exit code
 loginUser :: User -> IO ExitCode
-loginUser (User email passwd) = do
+loginUser (User mail pass) = do
   (exit, _, _) <- readProcessWithExitCode "lpass"
-                                          ["login", "--trust", email]
-                                          passwd
+                                          ["login", "--trust", mail]
+                                          pass
   return exit
 
 -- | Start a lastpass session and login user
@@ -101,17 +110,34 @@ showItems = readProcess "lpass" ["ls"] ""
 
 getJsonItems :: String -> IO [String]
 getJsonItems password = idList >>= traverse (getJsonItem password)
- where
-  getJsonItem passwd iden = readProcess "lpass" ["show", "--json", iden] passwd
-  idList = parseIds <$> showItems
+  where idList = parseIds <$> showItems
+
+getJsonItem :: String -> String -> IO String
+getJsonItem pass iden = readProcess "lpass" ["show", "--json", iden] pass
 
 getItems :: String -> IO [Either String Item]
 getItems password = map parseItem <$> getJsonItems password
 
 -- | TODO: maybe return error on fail
-setItem :: Item -> IO ()
-setItem item = do
+editItem :: Item -> IO ()
+editItem item = do
   _ <- readProcess "lpass"
                    ["edit", "--non-interactive", (getId item)]
                    (write item)
   return ()
+
+-- | If item name is not unique process fails
+deleteItem :: String -> IO ExitCode
+deleteItem itemId = do
+  (exit, _, _) <- readProcessWithExitCode "lpass" ["rm", itemId] ""
+  return exit
+
+-- | Write item to the vault using the name field as the entry name.
+-- id field is ignored, because one is generated when the item is created
+addItem :: Item -> IO ExitCode
+addItem item = do
+  (exit, _, _) <- readProcessWithExitCode
+    "lpass"
+    ["add", "--non-interactive", (getName item)]
+    (write item)
+  return exit

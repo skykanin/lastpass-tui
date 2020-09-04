@@ -1,5 +1,6 @@
 module Parse.Encode
-  ( write
+  ( fromItem
+  , write
   )
 where
 

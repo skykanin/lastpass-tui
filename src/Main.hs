@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {- |
    Module      : Main
    License     : GNU GPL, version 3 or above
@@ -16,13 +17,14 @@ import           CLI                            ( User(..)
                                                 , getUser
                                                 )
 import           System.Exit                    ( ExitCode(..) )
+
 main :: IO ()
 main = do
-  user <- getUser
-  exit <- startSession user
+  user@(User _ pass) <- getUser
+  exit               <- startSession user
   case exit of
     ExitFailure _ -> putStrLn "Failed to login"
     ExitSuccess   -> do
-      items <- getItems (_passwd user)
+      items <- getItems pass
       print items
       endSession

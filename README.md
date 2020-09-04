@@ -1,5 +1,5 @@
 # LastPass TUI
-A terminal user interface for LastPass written in haskell
+A terminal user interface for LastPass written in Haskell.
 
 ## Develop
 ### Prerequisites
@@ -24,4 +24,14 @@ After that you can run the project with
 `cabal run`
 
 ### Build
+To build the project using cabal you can run
 `cabal build [...opts]`
+However if you want to build the executable through nix you can run
+`nix-build -A lastpass-tui.components.exes.lpt`
+The resulting executable will be under `./result/bin/lpt`
+
+### Test
+To run the tests you first need to provide a test account. The template is given in
+`misc/testUserTemplate.json`. The actual json filename is the same, but without the
+"template" suffix. Now simple run
+`cabal test`
