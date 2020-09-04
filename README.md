@@ -1,6 +1,6 @@
 # LastPass TUI
 [![GitHub issues by-label](https://img.shields.io/github/workflow/status/skykanin/lastpass-tui/Haskell%20CI?logo=GitHub&style=for-the-badge)](https://github.com/skykanin/lastpass-tui/actions?query=workflow%3A%22Haskell+CI%22)
-
+[![license](https://img.shields.io/github/license/skykanin/lastpass-tui?color=%23BD0000&style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 
 A terminal user interface for LastPass written in Haskell.
