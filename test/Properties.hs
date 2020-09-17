@@ -89,9 +89,8 @@ addItemTest passwd item = do
         Left _ -> property False
         Right retItem ->
           let updatedItem =
-                setId (getId retItem) .
-                setGroup (getGroup retItem) $ retItem
-          in updatedItem === retItem
+                  setId (getId retItem) . setGroup (getGroup retItem) $ retItem
+          in  updatedItem === retItem
 
 -- | Run all tests
 main :: IO ()
@@ -101,7 +100,7 @@ main = do
     Left  err  -> print err
     Right user -> do
       _ <- startSession user
-      defaultMain $
-        testProperty "setting and then getting item should return same item" $
-          withMaxSuccess 50 (ioProperty . (addItemTest $ passwd user))
+      defaultMain
+        $ testProperty "setting and then getting item should return same item"
+        $ withMaxSuccess 50 (ioProperty . (addItemTest $ passwd user))
       endSession
