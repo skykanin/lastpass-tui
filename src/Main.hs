@@ -10,21 +10,7 @@ Main entry point for the executable
 -}
 module Main where
 
-import           CLI                            ( User(..)
-                                                , startSession
-                                                , getItems
-                                                , endSession
-                                                , getUser
-                                                )
-import           System.Exit                    ( ExitCode(..) )
+import           UI.Login                       ( tui )
 
 main :: IO ()
-main = do
-  user@(User _ pass) <- getUser
-  exit               <- startSession user
-  case exit of
-    ExitFailure _ -> putStrLn "Failed to login"
-    ExitSuccess   -> do
-      items <- getItems pass
-      print items
-      endSession
+main = tui
