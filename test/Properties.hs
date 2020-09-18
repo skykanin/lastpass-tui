@@ -14,6 +14,7 @@ import           Data.ByteString.Lazy.Char8     ( pack )
 import           Data.HashMap.Strict            ( HashMap
                                                 , fromList
                                                 )
+import           Data.Text                      ( Text, unpack )                 
 import           Parse.Decode                   ( parseItem )
 import           Parse.Types
 import           System.Environment             ( getEnv )
@@ -78,13 +79,13 @@ getUserFromFile :: FilePath -> IO (Either String User)
 getUserFromFile filepath = eitherDecode . pack <$> readFile filepath
 
 -- | Checks if the added item is equivalent when retrieved from the vault
-addItemTest :: String -> Item -> IO Property
+addItemTest :: Text -> Item -> IO Property
 addItemTest passwd item = do
   exitcode <- addItem item
   case exitcode of
     ExitFailure _ -> return $ property False
     ExitSuccess   -> do
-      eitherItem <- parseItem <$> getJsonItem passwd (getName item)
+      eitherItem <- parseItem <$> getJsonItem (unpack passwd)  (getName item)
       return $ case eitherItem of
         Left _ -> property False
         Right retItem ->
@@ -102,5 +103,5 @@ main = do
       _ <- startSession user
       defaultMain
         $ testProperty "setting and then getting item should return same item"
-        $ withMaxSuccess 50 (ioProperty . (addItemTest $ passwd user))
+        $ withMaxSuccess 50 (ioProperty . (addItemTest $ _passwd user))
       endSession

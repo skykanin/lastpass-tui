@@ -27,6 +27,7 @@ where
 
 import           Control.Exception              ( bracket_ )
 import           Data.Aeson
+import           Parse.Types                   ( underscoreParser )
 import           GHC.Generics
 import           Lens.Micro.TH                  ( makeLenses )
 import           Parse.Decode                   ( parseIds
@@ -60,7 +61,8 @@ data User = User
 
 makeLenses ''User
 
-instance FromJSON User
+instance FromJSON User where
+  parseJSON = underscoreParser
 
 withEcho :: Bool -> IO a -> IO a
 withEcho echo action = do
