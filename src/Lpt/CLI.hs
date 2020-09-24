@@ -27,7 +27,7 @@ where
 
 import           Control.Exception              ( bracket_ )
 import           Data.Aeson
-import           Parse.Types                   ( underscoreParser )
+import           Parse.Types                    ( underscoreParser )
 import           GHC.Generics
 import           Lens.Micro.TH                  ( makeLenses )
 import           Parse.Decode                   ( parseIds
