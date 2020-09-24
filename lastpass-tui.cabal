@@ -43,7 +43,9 @@ library lpt-lib
                      , Parse.Encode
                      , Parse.Decode
                      , Parse.Types
+                     , UI.Core
                      , UI.Login
+                     , UI.Types
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
 

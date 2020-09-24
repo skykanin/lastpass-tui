@@ -10,7 +10,7 @@ Main entry point for the executable
 -}
 module Main where
 
-import           UI.Login                       ( tui )
+import           UI.Core                        ( tui )
 
 main :: IO ()
 main = tui

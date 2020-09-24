@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : UI.Login
    License     : GNU GPL, version 3 or above
@@ -6,14 +5,16 @@
    Stability   : alpha
    Portability : portable
 
-UI module dealing with the login page
+UI module dealing with the login page drawing and event handling
 -}
 module UI.Login
-  ( tui
+  ( drawLoginPage
+  , handleLogin
+  , loginForm
+  , wrap
   )
 where
 
-import           Brick.AttrMap
 import           Brick.Focus
 import           Brick.Forms
 import           Brick.Main
@@ -21,46 +22,26 @@ import           Brick.Types
 import           Brick.Widgets.Border
 import           Brick.Widgets.Center
 import           Brick.Widgets.Core
-import qualified Brick.Widgets.Edit            as E
 import           CLI                            ( User(..)
                                                 , email
                                                 , passwd
+                                                , startSession
                                                 )
-import           Brick.Util                     ( on )
-import qualified Graphics.Vty                  as V
-import           Graphics.Vty.Input.Events
+import           Control.Monad.IO.Class         ( liftIO )
+import           Data.Maybe                     ( fromJust )
+import           Graphics.Vty.Input.Events      ( Event )
+import           System.Exit                    ( ExitCode(..) )
+import           UI.Types                       ( Name(..)
+                                                , TuiState(..)
+                                                )
 
-tui :: IO ()
-tui = do
-  initialState <- buildInitialState
-  endState     <- defaultMain tuiApp initialState
-  print $ formState endState
+drawLoginPage :: Form User e Name -> String -> [Widget Name]
+drawLoginPage form [] = fix . renderForm $ form
+drawLoginPage form errStr =
+  fix . vBox $ [renderForm form, hCenter $ str errStr]
 
-tuiApp :: App (Form User e Name) e Name
-tuiApp = App { appDraw         = drawTui
-             , appChooseCursor = focusRingCursor formFocus
-             , appHandleEvent  = handleTuiEvent
-             , appStartEvent   = pure
-             , appAttrMap      = const theMap
-             }
-
-theMap :: AttrMap
-theMap = attrMap
-  V.defAttr
-  [ (E.editAttr          , V.white `on` V.black)
-  , (E.editFocusedAttr   , V.black `on` V.yellow)
-  , (invalidFormInputAttr, V.white `on` V.red)
-  , (focusedFormInputAttr, V.black `on` V.yellow)
-  ]
-
-buildInitialState :: IO (Form User e Name)
-buildInitialState = pure $ loginForm (User "email" "password")
-
-data Name =
-    EmailField
-  | PasswdField
-  deriving (Eq, Ord, Show)
-
+fix :: Widget Name -> [Widget Name]
+fix = pure . center . setAvailableSize (50, 10) . borderWithLabel (str "Login")
 loginForm :: User -> Form User e Name
 loginForm =
   let label s w =
@@ -73,17 +54,16 @@ loginForm =
         , label "Passwd:" @@= editPasswordField passwd PasswdField
         ]
 
-showForm :: Form User e Name -> Widget Name
-showForm = center . hLimit 30 . borderWithLabel (str "Login") . renderForm
+handleLogin :: Form User Event Name -> Event -> EventM Name (Next TuiState)
+handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
+  then continue . wrap $ form
+  else do
+    form'    <- handleFormEvent (VtyEvent vtye) form
+    exitcode <- liftIO $ startSession (formState form')
+    case exitcode of
+      ExitSuccess   -> continue (Home "This is the main menu!")
+      ExitFailure _ -> continue (Login (form', "Wrong username or password"))
+  where field = fromJust . focusGetCurrent . formFocus $ form
 
-drawTui :: Form User e Name -> [Widget Name]
-drawTui = pure . showForm
-
-handleTuiEvent
-  :: Eq n => Form s e n -> BrickEvent n e -> EventM n (Next (Form s e n))
-handleTuiEvent s e = case e of
-  VtyEvent vtye -> case vtye of
-    EvKey (KChar 'q') [] -> halt s
-    _                    -> handleFormEvent e s >>= continue
-
-  _ -> continue s
+wrap :: Form User Event Name -> TuiState
+wrap form = Login (form, "")
