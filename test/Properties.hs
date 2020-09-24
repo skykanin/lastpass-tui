@@ -14,7 +14,9 @@ import           Data.ByteString.Lazy.Char8     ( pack )
 import           Data.HashMap.Strict            ( HashMap
                                                 , fromList
                                                 )
-import           Data.Text                      ( Text, unpack )                 
+import           Data.Text                      ( Text
+                                                , unpack
+                                                )
 import           Parse.Decode                   ( parseItem )
 import           Parse.Types
 import           System.Environment             ( getEnv )
@@ -85,7 +87,7 @@ addItemTest passwd item = do
   case exitcode of
     ExitFailure _ -> return $ property False
     ExitSuccess   -> do
-      eitherItem <- parseItem <$> getJsonItem (unpack passwd)  (getName item)
+      eitherItem <- parseItem <$> getJsonItem (unpack passwd) (getName item)
       return $ case eitherItem of
         Left _ -> property False
         Right retItem ->
