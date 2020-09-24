@@ -22,7 +22,6 @@ common shared-properties
 executable lpt
   import:              shared-properties
   build-depends:       base == 4.*
-                     , brick
                      , lpt-lib
   main-is:             Main.hs
   hs-source-dirs:      src
@@ -34,14 +33,19 @@ library lpt-lib
                      , aeson
                      , brick
                      , bytestring
+                     , microlens-th
                      , process
                      , regex
                      , text
                      , unordered-containers
+                     , vty
   exposed-modules:     CLI
                      , Parse.Encode
                      , Parse.Decode
                      , Parse.Types
+                     , UI.Core
+                     , UI.Login
+                     , UI.Types
   hs-source-dirs:      src, src/Lpt
   ghc-options:         -Wall
 
@@ -56,6 +60,7 @@ test-suite properties
                      , QuickCheck >= 2.14
                      , tasty
                      , tasty-quickcheck
+                     , text
                      , unordered-containers
   default-language:    Haskell2010
   hs-source-dirs:      test

@@ -6,13 +6,14 @@
     # setup derivation for x86_64-linux
     defaultPackage.x86_64-linux =
       let hn = haskellNix.legacyPackages.x86_64-linux.haskell-nix;
-      in hn.project {
-        src = hn.haskellLib.cleanGit {
-          name = "lastpass-tui";
-          src = ./.;
-        };
-        compiler-nix-name = "ghc884";
-      };
+          drv = hn.project {
+            src = hn.haskellLib.cleanGit {
+              name = "lastpass-tui";
+              src = ./.;
+            };
+            compiler-nix-name = "ghc884";
+          };
+      in drv.lastpass-tui;
    
     # setup devShell for x86_64-linux.
     devShell.x86_64-linux =

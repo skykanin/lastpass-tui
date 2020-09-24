@@ -20,6 +20,7 @@ module Parse.Types
   , getName
   , setGroup
   , setId
+  , underscoreParser
   )
 where
 

@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 {- |
    Module      : CLI
    License     : GNU GPL, version 3 or above
@@ -10,6 +12,8 @@ Provides all the commands wrapping the lastpass-cli
 -}
 module CLI
   ( User(..)
+  , email
+  , passwd
   , endSession
   , startSession
   , addItem
@@ -23,7 +27,17 @@ where
 
 import           Control.Exception              ( bracket_ )
 import           Data.Aeson
+import           Parse.Types                    ( underscoreParser )
 import           GHC.Generics
+import           Lens.Micro.TH                  ( makeLenses )
+import           Parse.Decode                   ( parseIds
+                                                , parseItem
+                                                )
+import           Parse.Encode                   ( write )
+import           Parse.Types                    ( Item
+                                                , getId
+                                                , getName
+                                                )
 import           System.IO                      ( hFlush
                                                 , hGetEcho
                                                 , hSetEcho
@@ -36,40 +50,37 @@ import           System.Process                 ( callProcess
                                                 , readProcessWithExitCode
                                                 , readProcess
                                                 )
-import           Parse.Decode                   ( parseIds
-                                                , parseItem
-                                                )
-import           Parse.Encode                   ( write )
-import           Parse.Types                    ( Item
-                                                , getId
-                                                , getName
-                                                )
+import qualified Data.Text                     as T
+import qualified Data.Text.IO                  as T
 
 data User = User
-  { email :: String
-  , passwd :: String
+  { _email :: T.Text
+  , _passwd :: T.Text
   }
   deriving (Generic, Eq, Show)
 
-instance FromJSON User
+makeLenses ''User
+
+instance FromJSON User where
+  parseJSON = underscoreParser
 
 withEcho :: Bool -> IO a -> IO a
 withEcho echo action = do
   old <- hGetEcho stdin
   bracket_ (hSetEcho stdin echo) (hSetEcho stdin old) action
 
-getEmail :: IO String
+getEmail :: IO T.Text
 getEmail = do
   putStr "Email: "
   hFlush stdout
-  getLine
+  T.getLine
 
 -- | Get password without terminal echoing
-getPassword :: IO String
+getPassword :: IO T.Text
 getPassword = do
   putStr "Password: [Input Hidden]"
   hFlush stdout
-  pass <- withEcho False getLine
+  pass <- withEcho False T.getLine
   putChar '\n'
   return pass
 
@@ -86,9 +97,10 @@ checkLoginStatus = do
 -- | Attempt user login and return appropriate exit code
 loginUser :: User -> IO ExitCode
 loginUser (User mail pass) = do
-  (exit, _, _) <- readProcessWithExitCode "lpass"
-                                          ["login", "--trust", mail]
-                                          pass
+  (exit, _, _) <- readProcessWithExitCode
+    "lpass"
+    ["login", "--trust", (T.unpack mail)]
+    (T.unpack pass)
   return exit
 
 -- | Start a lastpass session and login user
