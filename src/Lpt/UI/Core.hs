@@ -74,14 +74,14 @@ handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
 handleTuiEvent state event = case state of
   Login (form, _) -> case event of
     VtyEvent vtye -> case vtye of
-      EvKey (KChar 'q') [] -> exitThenHalt state
+      EvKey KEsc [] -> exitThenHalt state
       EvKey KEnter [] -> handleLogin form vtye
       _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
     _ -> continue state
   Home _ -> case event of
     VtyEvent vtye -> case vtye of
-      EvKey (KChar 'q') [] -> exitThenHalt state
-      _                    -> continue state
+      EvKey KEsc [] -> exitThenHalt state
+      _             -> continue state
     _ -> continue state
 
 exitThenHalt :: TuiState -> EventM Name (Next TuiState)
