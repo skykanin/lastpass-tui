@@ -1,12 +1,6 @@
 name: Nix build
 
 on:
-  push:
-    branches: [ master ]
-    paths:
-    - '**.cabal'
-    - 'src/**'
-    - 'test/**'
   pull_request:
     branches: [ master ]
     paths:
