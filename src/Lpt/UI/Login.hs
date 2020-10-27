@@ -31,6 +31,7 @@ import           Control.Monad.IO.Class         ( liftIO )
 import           Data.Maybe                     ( fromJust )
 import           Graphics.Vty.Input.Events      ( Event )
 import           System.Exit                    ( ExitCode(..) )
+import           UI.Home                        ( buildHomepage )
 import           UI.Types                       ( Name(..)
                                                 , TuiState(..)
                                                 )
@@ -62,7 +63,7 @@ handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
     form'    <- handleFormEvent (VtyEvent vtye) form
     exitcode <- liftIO $ startSession (formState form')
     case exitcode of
-      ExitSuccess   -> continue (Home "This is the main menu!")
+      ExitSuccess   -> buildHomepage (formState form) vtye
       ExitFailure _ -> continue (Login (form', "Wrong username or password"))
   where field = fromJust . focusGetCurrent . formFocus $ form
 

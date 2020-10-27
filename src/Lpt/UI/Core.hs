@@ -49,7 +49,7 @@ tuiApp = App { appDraw         = drawTui
 
 focus :: TuiState -> FocusRing Name
 focus (Login (form, _)) = formFocus form
-focus (Home  _        ) = focusRing [HomeBox]
+focus (Home  _        ) = focusRing [HomeList]
 
 theMap :: AttrMap
 theMap = attrMap
@@ -65,8 +65,7 @@ buildInitialState = pure . Login $ (loginForm (User "" ""), "")
 
 drawTui :: TuiState -> [Widget Name]
 drawTui (Login tuple) = uncurry drawLoginPage $ tuple
-drawTui (Home string) =
-  pure . center . hLimit 50 . borderWithLabel (str "Home") . str $ string
+drawTui (Home  list ) = drawHomepage list
 
 handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
 handleTuiEvent state event = case state of
@@ -76,10 +75,10 @@ handleTuiEvent state event = case state of
       EvKey KEnter [] -> handleLogin form vtye
       _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
     _ -> continue state
-  Home _ -> case event of
+  Home list -> case event of
     VtyEvent vtye -> case vtye of
       EvKey KEsc [] -> exitThenHalt state
-      _             -> continue state
+      _             -> handleHomepage list vtye
     _ -> continue state
 
 exitThenHalt :: TuiState -> EventM Name (Next TuiState)

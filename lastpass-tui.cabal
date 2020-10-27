@@ -38,12 +38,14 @@ library lpt-lib
                      , regex
                      , text
                      , unordered-containers
+                     , vector
                      , vty
   exposed-modules:     CLI
                      , Parse.Encode
                      , Parse.Decode
                      , Parse.Types
                      , UI.Core
+                     , UI.Home
                      , UI.Login
                      , UI.Types
   hs-source-dirs:      src, src/Lpt

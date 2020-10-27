@@ -15,16 +15,18 @@ module UI.Types
 where
 
 import           Brick.Forms
+import           Brick.Widgets.List             ( List )
 import           CLI                            ( User )
 import           Graphics.Vty.Input.Events      ( Event )
+import           Parse.Types                    ( Item )
 
 data TuiState =
     Login (Form User Event Name, String)
-  | Home String
+  | Home (List Name Item)
 
 data Name =
     EmailField
   | PasswdField
   | ShowField
-  | HomeBox
+  | HomeList
   deriving (Eq, Ord, Show)
