@@ -5,7 +5,7 @@
    Stability   : alpha
    Portability : portable
 
-UI module dealing with the login page drawing and event handling
+UI module dealing with the login page rendering and event handling
 -}
 module UI.Login
   ( drawLoginPage
@@ -42,6 +42,7 @@ drawLoginPage form errStr =
 
 fix :: Widget Name -> [Widget Name]
 fix = pure . center . setAvailableSize (50, 10) . borderWithLabel (str "Login")
+
 loginForm :: User -> Form User e Name
 loginForm =
   let label s w =

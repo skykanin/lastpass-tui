@@ -18,9 +18,6 @@ import           Brick.Focus
 import           Brick.Forms
 import           Brick.Main
 import           Brick.Types
-import           Brick.Widgets.Border
-import           Brick.Widgets.Center
-import           Brick.Widgets.Core
 import qualified Brick.Widgets.Edit            as E
 import           Brick.Util                     ( on )
 import           CLI                            ( User(..)
@@ -29,18 +26,19 @@ import           CLI                            ( User(..)
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Graphics.Vty                  as V
 import           Graphics.Vty.Input.Events
+import           UI.Home
 import           UI.Login
 import           UI.Types                       ( Name(..)
                                                 , TuiState(..)
                                                 )
-
+-- | Application entry point
 tui :: IO ()
 tui = do
   initialState <- buildInitialState
   _            <- defaultMain tuiApp initialState
   return ()
 
-
+-- | Top level application definition
 tuiApp :: App TuiState e Name
 tuiApp = App { appDraw         = drawTui
              , appChooseCursor = focusRingCursor focus
