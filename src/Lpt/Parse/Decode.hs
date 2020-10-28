@@ -6,7 +6,7 @@
    Stability   : alpha
    Portability : portable
 
-Provides Item Id string and Item JSON type parser
+Provides Item Id string and Item JSON type parsers
 -}
 module Parse.Decode
   ( parseIds
@@ -21,9 +21,13 @@ import           Data.HashMap.Strict            ( HashMap
                                                 )
 import           Data.Maybe                     ( mapMaybe )
 import qualified Data.Text                     as T
-import           Parse.Types                    ( Item(..) )
+import           Parse.Types                    ( Item(..)
+                                                , getGroup
+                                                , setGroup
+                                                )
 import           Text.RE.TDFA.String
 
+type RawItem = HashMap T.Text T.Text
 
 -- | Parse a JSON string into a hashmap of strings
 parseToMap :: String -> Either String (String, RawItem)
@@ -32,8 +36,6 @@ parseToMap str = toTuple . fmap unwrap . head <$> obj
   unwrap  = \(String s) -> s
   toTuple = \a -> (str, a)
   obj     = eitherDecode (B.pack str)
-
-type RawItem = HashMap T.Text T.Text
 
 -- | Parse JSON string to Item type depending on properties of the
 -- key, value pairs in the hashmap representation of the JSON string
@@ -47,9 +49,16 @@ mapToItem str rawItem
   note = T.take 8 $ rawItem ! "note"
   decoder string = head <$> eitherDecode (B.pack string)
 
+patchGroupField :: Item -> Item
+patchGroupField item | null $ getGroup item = setGroup "none" item
+                     | otherwise            = item
+
 -- | Parse json string to Item
 parseItem :: String -> Either String Item
-parseItem str = parseToMap str >>= uncurry mapToItem
+parseItem str = do
+  (strKey, rawItem) <- parseToMap str
+  item              <- mapToItem strKey rawItem
+  pure $ patchGroupField item
 
 -- | Parse out item ids from string output of 'lpass ls'
 parseIds :: String -> [String]
