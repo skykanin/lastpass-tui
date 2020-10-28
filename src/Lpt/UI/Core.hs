@@ -19,6 +19,7 @@ import           Brick.Forms
 import           Brick.Main
 import           Brick.Types
 import qualified Brick.Widgets.Edit            as E
+import qualified Brick.Widgets.List            as L
 import           Brick.Util                     ( on )
 import           CLI                            ( User(..)
                                                 , endSession
@@ -54,10 +55,11 @@ focus (Home  _        ) = focusRing [HomeList]
 theMap :: AttrMap
 theMap = attrMap
   V.defAttr
-  [ (E.editAttr          , V.white `on` V.black)
-  , (E.editFocusedAttr   , V.black `on` V.yellow)
-  , (invalidFormInputAttr, V.white `on` V.red)
-  , (focusedFormInputAttr, V.black `on` V.yellow)
+  [ (E.editAttr               , V.white `on` V.black)
+  , (E.editFocusedAttr        , V.black `on` V.yellow)
+  , (invalidFormInputAttr     , V.white `on` V.red)
+  , (focusedFormInputAttr     , V.black `on` V.yellow)
+  , (L.listSelectedFocusedAttr, V.black `on` V.yellow)
   ]
 
 buildInitialState :: IO TuiState
