@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE TypeApplications      #-}
 {- |
    Module      : UI.Home
    License     : GNU GPL, version 3 or above
@@ -34,14 +36,13 @@ import           Brick.Widgets.List             ( List
 import           Data.HashMap.Strict            ( elems
                                                 , keys
                                                 )
+
 import           Data.Vector                    ( fromList )
 import           Graphics.Vty.Input.Events      ( Event )
-import qualified Parse.Types                   as T
-                                                ( Complex(..)
+import           Parse.Types                    ( Complex(..)
                                                 , Login(..)
+                                                , Item(..)
                                                 , Note(..)
-                                                )
-import           Parse.Types                    ( Item(..)
                                                 , getName
                                                 )
 import           UI.Types                       ( Name(..)
@@ -49,38 +50,49 @@ import           UI.Types                       ( Name(..)
                                                 )
 
 drawHomepage :: List Name Item -> [Widget Name]
-drawHomepage items = pure (listWidget items <+> itemWidget items)
+drawHomepage items = pure (listWidget <+> itemWidget)
  where
   listWidget =
     borderWithLabel (str "Items")
       . hLimitPercent 30
-      . renderList renderElement True
-  itemWidget vaultItems =
-    borderWithLabel (label selected) . renderItemWidget $ selected
+      . renderList (const renderListElement) True
+      $ items
+  itemWidget = borderWithLabel (label selected) (renderItemWidget selected)
    where
-    label = str . maybe "" (itemType . snd)
-    itemType (MkLogin   _) = "Password"
-    itemType (MkNote    _) = "Secure Note"
-    itemType (MkComplex _) = "Other"
-    selected = listSelectedElement vaultItems
+    label = str . itemType . fmap snd
+    itemType (Just (MkLogin   _)) = "Password"
+    itemType (Just (MkNote    _)) = "Secure Note"
+    itemType (Just (MkComplex _)) = "Other"
+    itemType Nothing              = ""
+    selected = listSelectedElement items
 
-renderElement :: Bool -> Item -> Widget Name
-renderElement _ item =
-  padTopBottom 1 . vBox . map (\f -> str (f item)) $ [getName]
+-- | Renders a single list item element
+renderListElement :: Item -> Widget Name
+renderListElement = padTopBottom 1 . str . getName
 
+-- | Renders the item widget with more detailed information
 renderItemWidget :: Maybe (Int, Item) -> Widget Name
 renderItemWidget (Just (_, item)) = renderItem item
 renderItemWidget Nothing          = str "No item selected"
 
+-- | Renders an Item type into a UI widget
 renderItem :: Item -> Widget Name
-renderItem (MkLogin (T.Login iden name username password group url note)) =
-  infoWidget loginKeys
-    <+> vBox (map strWrap [iden, name, username, password, group, url, note])
-renderItem (MkNote (T.Note iden name group note)) =
-  infoWidget noteKeys <+> vBox (map strWrap [iden, name, group, note])
-renderItem (MkComplex (T.Complex iden name group note)) =
-  infoWidget (complexKeys ++ keys note)
-    <+> vBox (map strWrap $ [iden, name, group] ++ elems note)
+renderItem (MkLogin login) = infoWidget loginKeys
+  <+> vBox (map (\f -> strWrap $ f login) listVals)
+ where
+  listVals :: [Login -> String]
+  listVals = [_id, _name, _username, _password, _group, _url, _note]
+renderItem (MkNote note) = infoWidget noteKeys
+  <+> vBox (map (\f -> strWrap $ f note) listVals)
+ where
+  listVals :: [Note -> String]
+  listVals = [_id, _name, _group, _note]
+renderItem (MkComplex complex) = infoWidget (complexKeys ++ keys note)
+  <+> vBox (map strWrap $ (map ($ complex) listVals) ++ elems note)
+ where
+  listVals :: [Complex -> String]
+  listVals = [_id, _name, _group]
+  note     = _note (complex :: Complex)
 
 infoWidget :: [String] -> Widget Name
 infoWidget = padRight (Pad 2) . vBox . map str
