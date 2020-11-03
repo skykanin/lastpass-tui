@@ -20,9 +20,14 @@ import           CLI                            ( User )
 import           Graphics.Vty.Input.Events      ( Event )
 import           Parse.Types                    ( Item )
 
+type LoginForm = Form User Event Name
+type Error = String
+
+type ItemList = List Name Item
+
 data TuiState =
-    Login (Form User Event Name, String)
-  | Home (List Name Item)
+    Login (LoginForm, Error)
+  | Home ItemList
 
 data Name =
     EmailField
