@@ -5,7 +5,7 @@
    Stability   : alpha
    Portability : portable
 
-UI module dealing with the login page drawing and event handling
+UI module dealing with the login page rendering and event handling
 -}
 module UI.Login
   ( drawLoginPage
@@ -24,13 +24,17 @@ import           Brick.Widgets.Center
 import           Brick.Widgets.Core
 import           CLI                            ( User(..)
                                                 , email
+                                                , getItems
                                                 , passwd
                                                 , startSession
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
+import           Data.Either                    ( rights )
 import           Data.Maybe                     ( fromJust )
+import           Data.Text                      ( unpack )
 import           Graphics.Vty.Input.Events      ( Event )
 import           System.Exit                    ( ExitCode(..) )
+import           UI.Home                        ( buildHomepage )
 import           UI.Types                       ( Name(..)
                                                 , TuiState(..)
                                                 )
@@ -42,6 +46,7 @@ drawLoginPage form errStr =
 
 fix :: Widget Name -> [Widget Name]
 fix = pure . center . setAvailableSize (50, 10) . borderWithLabel (str "Login")
+
 loginForm :: User -> Form User e Name
 loginForm =
   let label s w =
@@ -61,7 +66,9 @@ handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
     form'    <- handleFormEvent (VtyEvent vtye) form
     exitcode <- liftIO $ startSession (formState form')
     case exitcode of
-      ExitSuccess   -> continue (Home "This is the main menu!")
+      ExitSuccess -> do
+        items <- liftIO . getItems . unpack . _passwd . formState $ form
+        buildHomepage (rights items) vtye
       ExitFailure _ -> continue (Login (form', "Wrong username or password"))
   where field = fromJust . focusGetCurrent . formFocus $ form
 

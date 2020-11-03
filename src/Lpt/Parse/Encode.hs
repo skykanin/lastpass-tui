@@ -1,10 +1,21 @@
+{- |
+   Module      : Parse.Encode
+   License     : GNU GPL, version 3 or above
+   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
+   Stability   : alpha
+   Portability : portable
+
+Provides encoding functions the Item type
+-}
 module Parse.Encode
   ( fromItem
   , write
   )
 where
 
-import qualified Data.HashMap.Strict           as H
+import           Data.HashMap.Strict            ( HashMap
+                                                , toList
+                                                )
 import           Data.List                      ( intercalate )
 import           Parse.Types
 
@@ -32,6 +43,6 @@ fromItem (MkComplex (Complex _ name _ note)) =
   [("Name", name), ("", fromMap note)]
 
 -- | Convert complex hashmap value to writable string format
-fromMap :: H.HashMap String String -> String
-fromMap = concatMap format . H.toList
+fromMap :: HashMap String String -> String
+fromMap = concatMap format . toList
   where format (key, val) = key ++ ":" ++ val ++ "\n"

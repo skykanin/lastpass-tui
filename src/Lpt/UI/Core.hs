@@ -18,10 +18,8 @@ import           Brick.Focus
 import           Brick.Forms
 import           Brick.Main
 import           Brick.Types
-import           Brick.Widgets.Border
-import           Brick.Widgets.Center
-import           Brick.Widgets.Core
 import qualified Brick.Widgets.Edit            as E
+import qualified Brick.Widgets.List            as L
 import           Brick.Util                     ( on )
 import           CLI                            ( User(..)
                                                 , endSession
@@ -29,18 +27,19 @@ import           CLI                            ( User(..)
 import           Control.Monad.IO.Class         ( liftIO )
 import qualified Graphics.Vty                  as V
 import           Graphics.Vty.Input.Events
+import           UI.Home
 import           UI.Login
 import           UI.Types                       ( Name(..)
                                                 , TuiState(..)
                                                 )
-
+-- | Application entry point
 tui :: IO ()
 tui = do
   initialState <- buildInitialState
   _            <- defaultMain tuiApp initialState
   return ()
 
-
+-- | Top level application definition
 tuiApp :: App TuiState e Name
 tuiApp = App { appDraw         = drawTui
              , appChooseCursor = focusRingCursor focus
@@ -51,15 +50,16 @@ tuiApp = App { appDraw         = drawTui
 
 focus :: TuiState -> FocusRing Name
 focus (Login (form, _)) = formFocus form
-focus (Home  _        ) = focusRing [HomeBox]
+focus (Home  _        ) = focusRing [HomeList]
 
 theMap :: AttrMap
 theMap = attrMap
   V.defAttr
-  [ (E.editAttr          , V.white `on` V.black)
-  , (E.editFocusedAttr   , V.black `on` V.yellow)
-  , (invalidFormInputAttr, V.white `on` V.red)
-  , (focusedFormInputAttr, V.black `on` V.yellow)
+  [ (E.editAttr               , V.white `on` V.black)
+  , (E.editFocusedAttr        , V.black `on` V.yellow)
+  , (invalidFormInputAttr     , V.white `on` V.red)
+  , (focusedFormInputAttr     , V.black `on` V.yellow)
+  , (L.listSelectedFocusedAttr, V.black `on` V.yellow)
   ]
 
 buildInitialState :: IO TuiState
@@ -67,8 +67,7 @@ buildInitialState = pure . Login $ (loginForm (User "" ""), "")
 
 drawTui :: TuiState -> [Widget Name]
 drawTui (Login tuple) = uncurry drawLoginPage $ tuple
-drawTui (Home string) =
-  pure . center . hLimit 50 . borderWithLabel (str "Home") . str $ string
+drawTui (Home  list ) = drawHomepage list
 
 handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
 handleTuiEvent state event = case state of
@@ -78,10 +77,10 @@ handleTuiEvent state event = case state of
       EvKey KEnter [] -> handleLogin form vtye
       _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
     _ -> continue state
-  Home _ -> case event of
+  Home list -> case event of
     VtyEvent vtye -> case vtye of
       EvKey KEsc [] -> exitThenHalt state
-      _             -> continue state
+      _             -> handleHomepage list vtye
     _ -> continue state
 
 exitThenHalt :: TuiState -> EventM Name (Next TuiState)

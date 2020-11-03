@@ -125,7 +125,8 @@ getJsonItems password = idList >>= traverse (getJsonItem password)
   where idList = parseIds <$> showItems
 
 getJsonItem :: String -> String -> IO String
-getJsonItem pass iden = readProcess "lpass" ["show", "--json", iden] pass
+getJsonItem password iden =
+  readProcess "lpass" ["show", "--json", iden] password
 
 getItems :: String -> IO [Either String Item]
 getItems password = map parseItem <$> getJsonItems password
