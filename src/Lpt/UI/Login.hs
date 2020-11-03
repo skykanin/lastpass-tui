@@ -24,11 +24,14 @@ import           Brick.Widgets.Center
 import           Brick.Widgets.Core
 import           CLI                            ( User(..)
                                                 , email
+                                                , getItems
                                                 , passwd
                                                 , startSession
                                                 )
 import           Control.Monad.IO.Class         ( liftIO )
+import           Data.Either                    ( rights )
 import           Data.Maybe                     ( fromJust )
+import           Data.Text                      ( unpack )
 import           Graphics.Vty.Input.Events      ( Event )
 import           System.Exit                    ( ExitCode(..) )
 import           UI.Home                        ( buildHomepage )
@@ -63,7 +66,9 @@ handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
     form'    <- handleFormEvent (VtyEvent vtye) form
     exitcode <- liftIO $ startSession (formState form')
     case exitcode of
-      ExitSuccess   -> buildHomepage (formState form) vtye
+      ExitSuccess -> do
+        items <- liftIO . getItems . unpack . _passwd . formState $ form
+        buildHomepage (rights items) vtye
       ExitFailure _ -> continue (Login (form', "Wrong username or password"))
   where field = fromJust . focusGetCurrent . formFocus $ form
 

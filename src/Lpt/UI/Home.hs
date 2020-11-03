@@ -31,15 +31,9 @@ import           Brick.Widgets.List             ( List
                                                 , handleListEvent
                                                 , renderList
                                                 )
-import           CLI                            ( User(..)
-                                                , getItems
-                                                )
-import           Control.Monad.IO.Class         ( liftIO )
-import           Data.Either                    ( rights )
 import           Data.HashMap.Strict            ( elems
                                                 , keys
                                                 )
-import           Data.Text                      ( unpack )
 import           Data.Vector                    ( fromList )
 import           Graphics.Vty.Input.Events      ( Event )
 import qualified Parse.Types                   as T
@@ -100,11 +94,9 @@ noteKeys = ["Id", "Name", "Group", "Note"]
 complexKeys :: [String]
 complexKeys = ["Id", "Name", "Group"]
 
-buildHomepage :: User -> Event -> EventM Name (Next TuiState)
-buildHomepage (User _ passwd) vtye = do
-  items <- liftIO $ getItems (unpack passwd)
-  let itemList = list HomeList (fromList (rights items)) 5
-  handleHomepage itemList vtye
+buildHomepage :: [Item] -> Event -> EventM Name (Next TuiState)
+buildHomepage items vtye = handleHomepage itemList vtye
+  where itemList = list HomeList (fromList items) 5
 
 handleHomepage :: List Name Item -> Event -> EventM Name (Next TuiState)
 handleHomepage items vtye = handleListEvent vtye items >>= continue . Home
