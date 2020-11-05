@@ -111,4 +111,4 @@ buildHomepage items vtye = handleHomepage itemList vtye
   where itemList = list HomeList (fromList items) 5
 
 handleHomepage :: List Name Item -> Event -> EventM Name (Next TuiState)
-handleHomepage items vtye = handleListEvent vtye items >>= continue . Home
+handleHomepage items vtye = handleListEvent vtye items >>= continue . HomePage
