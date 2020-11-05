@@ -1,5 +1,5 @@
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE RecordWildCards       #-}
 {- |
    Module      : UI.Home
    License     : GNU GPL, version 3 or above
@@ -21,8 +21,9 @@ import           Brick.Types
 import           Brick.Widgets.Border           ( borderWithLabel )
 import           Brick.Widgets.Core             ( (<+>)
                                                 , hLimitPercent
+                                                , padAll
+                                                , padBottom
                                                 , padRight
-                                                , padTopBottom
                                                 , str
                                                 , strWrap
                                                 , vBox
@@ -68,34 +69,28 @@ drawHomepage items = pure (listWidget <+> itemWidget)
 
 -- | Renders a single list item element
 renderListElement :: Item -> Widget Name
-renderListElement = padTopBottom 1 . str . getName
+renderListElement = padRight Max . padBottom (Pad 1) . str . getName
 
 -- | Renders the item widget with more detailed information
 renderItemWidget :: Maybe (Int, Item) -> Widget Name
-renderItemWidget (Just (_, item)) = renderItem item
+renderItemWidget (Just (_, item)) = padAll 1 (renderItem item)
 renderItemWidget Nothing          = str "No item selected"
 
 -- | Renders an Item type into a UI widget
 renderItem :: Item -> Widget Name
-renderItem (MkLogin login) = infoWidget loginKeys
-  <+> vBox (map (\f -> strWrap $ f login) listVals)
- where
-  listVals :: [Login -> String]
-  listVals = [_id, _name, _username, _password, _group, _url, _note]
-renderItem (MkNote note) = infoWidget noteKeys
-  <+> vBox (map (\f -> strWrap $ f note) listVals)
- where
-  listVals :: [Note -> String]
-  listVals = [_id, _name, _group, _note]
-renderItem (MkComplex complex) = infoWidget (complexKeys ++ keys note)
-  <+> vBox (map strWrap $ (map ($ complex) listVals) ++ elems note)
- where
-  listVals :: [Complex -> String]
-  listVals = [_id, _name, _group]
-  note     = _note (complex :: Complex)
+renderItem (MkLogin (Login {..})) = itemKeys loginKeys <+> itemVals vals
+  where vals = [_id, _name, _username, _password, _group, _url, _note]
+renderItem (MkNote (Note {..})) = itemKeys noteKeys <+> itemVals vals
+  where vals = [_id, _name, _group, _note]
+renderItem (MkComplex (Complex {..})) = itemKeys (complexKeys ++ keys _note)
+  <+> itemVals (vals ++ elems _note)
+  where vals = [_id, _name, _group]
 
-infoWidget :: [String] -> Widget Name
-infoWidget = padRight (Pad 2) . vBox . map str
+itemKeys :: [String] -> Widget Name
+itemKeys = padRight (Pad 2) . vBox . map str
+
+itemVals :: [String] -> Widget Name
+itemVals = vBox . map strWrap
 
 loginKeys :: [String]
 loginKeys = ["Id", "Name", "Username", "Password", "Group", "Url", "Note"]
