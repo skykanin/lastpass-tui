@@ -26,8 +26,8 @@ type Error = String
 type ItemList = List Name Item
 
 data TuiState =
-    Login (LoginForm, Error)
-  | Home ItemList
+    LoginPage (LoginForm, Error)
+  | HomePage ItemList
 
 data Name =
     EmailField

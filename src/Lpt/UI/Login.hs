@@ -69,8 +69,9 @@ handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
       ExitSuccess -> do
         items <- liftIO . getItems . unpack . _passwd . formState $ form
         buildHomepage (rights items) vtye
-      ExitFailure _ -> continue (Login (form', "Wrong username or password"))
+      ExitFailure _ ->
+        continue (LoginPage (form', "Wrong username or password"))
   where field = fromJust . focusGetCurrent . formFocus $ form
 
 wrap :: Form User Event Name -> TuiState
-wrap form = Login (form, "")
+wrap form = LoginPage (form, "")
