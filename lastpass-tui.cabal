@@ -33,6 +33,7 @@ library lpt-lib
                      , aeson
                      , brick
                      , bytestring
+                     , Hclip
                      , microlens-th
                      , process
                      , regex
@@ -45,6 +46,7 @@ library lpt-lib
                      , Parse.Decode
                      , Parse.Types
                      , UI.Core
+                     , UI.Event
                      , UI.Home
                      , UI.Login
                      , UI.Types

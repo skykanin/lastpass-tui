@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {- |
    Module      : UI.Core
    License     : GNU GPL, version 3 or above
@@ -21,12 +21,9 @@ import           Brick.Types
 import qualified Brick.Widgets.Edit            as E
 import qualified Brick.Widgets.List            as L
 import           Brick.Util                     ( on )
-import           CLI                            ( User(..)
-                                                , endSession
-                                                )
-import           Control.Monad.IO.Class         ( liftIO )
+import           CLI                            ( User(..) )
 import qualified Graphics.Vty                  as V
-import           Graphics.Vty.Input.Events
+import           UI.Event                       ( handleTuiEvent )
 import           UI.Home
 import           UI.Login
 import           UI.Types                       ( Name(..)
@@ -50,7 +47,8 @@ tuiApp = App { appDraw         = drawTui
 
 focus :: TuiState -> FocusRing Name
 focus (LoginPage (form, _)) = formFocus form
-focus (HomePage  _        ) = focusRing [HomeList]
+focus (HomePage {..}      ) = focusRing [item]
+  where item = if listFocus then ItemList else ItemInfo
 
 theMap :: AttrMap
 theMap = attrMap
@@ -60,6 +58,7 @@ theMap = attrMap
   , (invalidFormInputAttr     , V.white `on` V.red)
   , (focusedFormInputAttr     , V.black `on` V.yellow)
   , (L.listSelectedFocusedAttr, V.black `on` V.yellow)
+  , (attrName "focused"       , V.black `on` V.yellow)
   ]
 
 buildInitialState :: IO TuiState
@@ -67,21 +66,7 @@ buildInitialState = pure . LoginPage $ (loginForm (User "" ""), "")
 
 drawTui :: TuiState -> [Widget Name]
 drawTui (LoginPage tuple) = uncurry drawLoginPage $ tuple
-drawTui (HomePage  list ) = drawHomepage list
+drawTui (HomePage {..}) =
+  drawHomepage itemList listFocus itemInfo focusedItemField
 
-handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
-handleTuiEvent state event = case state of
-  LoginPage (form, _) -> case event of
-    VtyEvent vtye -> case vtye of
-      EvKey KEsc [] -> exitThenHalt state
-      EvKey KEnter [] -> handleLogin form vtye
-      _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
-    _ -> continue state
-  HomePage list -> case event of
-    VtyEvent vtye -> case vtye of
-      EvKey KEsc [] -> exitThenHalt state
-      _             -> handleHomepage list vtye
-    _ -> continue state
 
-exitThenHalt :: TuiState -> EventM Name (Next TuiState)
-exitThenHalt state = liftIO endSession >> halt state

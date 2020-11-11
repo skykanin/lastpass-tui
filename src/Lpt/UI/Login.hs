@@ -9,35 +9,20 @@ UI module dealing with the login page rendering and event handling
 -}
 module UI.Login
   ( drawLoginPage
-  , handleLogin
   , loginForm
-  , wrap
   )
 where
 
-import           Brick.Focus
 import           Brick.Forms
-import           Brick.Main
 import           Brick.Types
 import           Brick.Widgets.Border
 import           Brick.Widgets.Center
 import           Brick.Widgets.Core
-import           CLI                            ( User(..)
+import           CLI                            ( User
                                                 , email
-                                                , getItems
                                                 , passwd
-                                                , startSession
                                                 )
-import           Control.Monad.IO.Class         ( liftIO )
-import           Data.Either                    ( rights )
-import           Data.Maybe                     ( fromJust )
-import           Data.Text                      ( unpack )
-import           Graphics.Vty.Input.Events      ( Event )
-import           System.Exit                    ( ExitCode(..) )
-import           UI.Home                        ( buildHomepage )
-import           UI.Types                       ( Name(..)
-                                                , TuiState(..)
-                                                )
+import           UI.Types                       ( Name(..) )
 
 drawLoginPage :: Form User e Name -> String -> [Widget Name]
 drawLoginPage form [] = fix . renderForm $ form
@@ -59,19 +44,3 @@ loginForm =
         , label "Passwd:" @@= editPasswordField passwd PasswdField
         ]
 
-handleLogin :: Form User Event Name -> Event -> EventM Name (Next TuiState)
-handleLogin form vtye = if not $ field `elem` [EmailField, PasswdField]
-  then continue . wrap $ form
-  else do
-    form'    <- handleFormEvent (VtyEvent vtye) form
-    exitcode <- liftIO $ startSession (formState form')
-    case exitcode of
-      ExitSuccess -> do
-        items <- liftIO . getItems . unpack . _passwd . formState $ form
-        buildHomepage (rights items) vtye
-      ExitFailure _ ->
-        continue (LoginPage (form', "Wrong username or password"))
-  where field = fromJust . focusGetCurrent . formFocus $ form
-
-wrap :: Form User Event Name -> TuiState
-wrap form = LoginPage (form, "")
