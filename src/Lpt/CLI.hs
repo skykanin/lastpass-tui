@@ -1,61 +1,65 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{- |
-   Module      : CLI
-   License     : GNU GPL, version 3 or above
-   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
-   Stability   : alpha
-   Portability : portable
+{-# LANGUAGE TemplateHaskell #-}
 
-Provides all the commands wrapping the lastpass-cli
--}
+-- |
+--   Module      : CLI
+--   License     : GNU GPL, version 3 or above
+--   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
+--   Stability   : alpha
+--   Portability : portable
+--
+-- Provides all the commands wrapping the lastpass-cli
 module CLI
-  ( User(..)
-  , email
-  , passwd
-  , endSession
-  , startSession
-  , addItem
-  , deleteItem
-  , getItems
-  , getJsonItem
-  , editItem
-  , getUser
+  ( User (..),
+    email,
+    passwd,
+    endSession,
+    startSession,
+    addItem,
+    deleteItem,
+    getItems,
+    getJsonItem,
+    editItem,
+    getUser,
   )
 where
 
-import           Control.Exception              ( bracket_ )
-import           Data.Aeson
-import           Parse.Types                    ( underscoreParser )
-import           GHC.Generics
-import           Lens.Micro.TH                  ( makeLenses )
-import           Parse.Decode                   ( parseIds
-                                                , parseItem
-                                                )
-import           Parse.Encode                   ( write )
-import           Parse.Types                    ( Item
-                                                , getId
-                                                , getName
-                                                )
-import           System.IO                      ( hFlush
-                                                , hGetEcho
-                                                , hSetEcho
-                                                , stdin
-                                                , stdout
-                                                )
-import           System.Environment             ( setEnv )
-import           System.Exit                    ( ExitCode(..) )
-import           System.Process                 ( callProcess
-                                                , readProcessWithExitCode
-                                                , readProcess
-                                                )
-import qualified Data.Text                     as T
-import qualified Data.Text.IO                  as T
+import Control.Exception (bracket_)
+import Data.Aeson
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import GHC.Generics
+import Lens.Micro.TH (makeLenses)
+import Parse.Decode
+  ( parseIds,
+    parseItem,
+  )
+import Parse.Encode (write)
+import Parse.Types
+  ( Item,
+    getId,
+    getName,
+    underscoreParser,
+  )
+import System.Environment (setEnv)
+import System.Exit (ExitCode (..))
+import System.IO
+  ( hFlush,
+    hGetEcho,
+    hSetEcho,
+    stdin,
+    stdout,
+  )
+import System.Process
+  ( callProcess,
+    readProcess,
+    readProcessWithExitCode,
+  )
 
 data User = User
-  { _email :: T.Text
-  , _passwd :: T.Text
+  { _email :: T.Text,
+    _passwd :: T.Text
   }
   deriving (Generic, Eq, Show)
 
@@ -91,16 +95,17 @@ checkLoginStatus :: IO Bool
 checkLoginStatus = do
   (exit, _, _) <- readProcessWithExitCode "lpass" ["status"] ""
   return $ case exit of
-    ExitSuccess   -> True
+    ExitSuccess -> True
     ExitFailure _ -> False
 
 -- | Attempt user login and return appropriate exit code
 loginUser :: User -> IO ExitCode
 loginUser (User mail pass) = do
-  (exit, _, _) <- readProcessWithExitCode
-    "lpass"
-    ["login", "--trust", (T.unpack mail)]
-    (T.unpack pass)
+  (exit, _, _) <-
+    readProcessWithExitCode
+      "lpass"
+      ["login", "--trust", (T.unpack mail)]
+      (T.unpack pass)
   return exit
 
 -- | Start a lastpass session and login user
@@ -110,7 +115,7 @@ startSession user = do
   if status
     then return ExitSuccess
     else do
-      setEnv "LPASS_AGENT_TIMEOUT"    "0" -- stop agent from timing out session
+      setEnv "LPASS_AGENT_TIMEOUT" "0" -- stop agent from timing out session
       setEnv "LPASS_DISABLE_PINENTRY" "1" -- stop using pinentry for password prompt
       loginUser user
 
@@ -122,7 +127,8 @@ showItems = readProcess "lpass" ["ls"] ""
 
 getJsonItems :: String -> IO [String]
 getJsonItems password = idList >>= traverse (getJsonItem password)
-  where idList = parseIds <$> showItems
+  where
+    idList = parseIds <$> showItems
 
 getJsonItem :: String -> String -> IO String
 getJsonItem password iden =
@@ -134,9 +140,11 @@ getItems password = map parseItem <$> getJsonItems password
 -- | TODO: maybe return error on fail
 editItem :: Item -> IO ()
 editItem item = do
-  _ <- readProcess "lpass"
-                   ["edit", "--non-interactive", (getId item)]
-                   (write item)
+  _ <-
+    readProcess
+      "lpass"
+      ["edit", "--non-interactive", (getId item)]
+      (write item)
   return ()
 
 -- | If item name is not unique process fails
@@ -149,8 +157,9 @@ deleteItem itemId = do
 -- id field is ignored, because one is generated when the item is created
 addItem :: Item -> IO ExitCode
 addItem item = do
-  (exit, _, _) <- readProcessWithExitCode
-    "lpass"
-    ["add", "--non-interactive", (getName item)]
-    (write item)
+  (exit, _, _) <-
+    readProcessWithExitCode
+      "lpass"
+      ["add", "--non-interactive", (getName item)]
+      (write item)
   return exit
