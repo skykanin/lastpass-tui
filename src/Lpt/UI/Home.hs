@@ -1,5 +1,4 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE RecordWildCards       #-}
+{-# LANGUAGE RecordWildCards #-}
 {- |
    Module      : UI.Home
    License     : GNU GPL, version 3 or above
@@ -27,6 +26,7 @@ import           Brick.Widgets.Core             ( (<+>)
                                                 , str
                                                 , strWrap
                                                 , vBox
+                                                , withAttr
                                                 )
 import           Brick.Widgets.List             ( List
                                                 , list
@@ -34,31 +34,39 @@ import           Brick.Widgets.List             ( List
                                                 , handleListEvent
                                                 , renderList
                                                 )
+import           Data.Bifunctor                 ( bimap )
+import           Data.Function                  ( on )
 import           Data.HashMap.Strict            ( elems
                                                 , keys
                                                 )
-
-import           Data.Vector                    ( fromList )
-import           Graphics.Vty.Input.Events      ( Event )
+import           Data.Maybe                     ( fromJust )
+import qualified Data.Vector                   as V
 import           Parse.Types                    ( Complex(..)
                                                 , Login(..)
                                                 , Item(..)
                                                 , Note(..)
                                                 , getName
                                                 )
-import           UI.Types                       ( Name(..)
-                                                , TuiState(..)
+import           UI.Types                       ( FocusedField
+                                                , ItemListFocus
+                                                , ItemInfo
+                                                , ItemList
+                                                , Name(..)
                                                 )
 
-drawHomepage :: List Name Item -> [Widget Name]
-drawHomepage items = pure (listWidget <+> itemWidget)
+drawHomepage
+  :: ItemList -> ItemListFocus -> ItemInfo -> FocusedField -> [Widget Name]
+drawHomepage items listFocus itemInfo focusedField = pure
+  (listWidget <+> itemWidget)
  where
   listWidget =
     borderWithLabel (str "Items")
       . hLimitPercent 30
-      . renderList (const renderListElement) True
+      . renderList (const renderListElement) listFocus
       $ items
-  itemWidget = borderWithLabel (label selected) (renderItemWidget selected)
+  itemWidget = borderWithLabel
+    (label selected)
+    (renderItemWidget itemInfo listFocus focusedField)
    where
     label = str . itemType . fmap snd
     itemType (Just (MkLogin   _)) = "Password"
@@ -72,19 +80,49 @@ renderListElement :: Item -> Widget Name
 renderListElement = padRight Max . padBottom (Pad 1) . str . getName
 
 -- | Renders the item widget with more detailed information
-renderItemWidget :: Maybe (Int, Item) -> Widget Name
-renderItemWidget (Just (_, item)) = padAll 1 (renderItem item)
-renderItemWidget Nothing          = str "No item selected"
+renderItemWidget :: ItemInfo -> ItemListFocus -> FocusedField -> Widget Name
+renderItemWidget itemInfo listFocus focusedField =
+  padAll 1 (renderItemInfo itemInfo listFocus focusedField)
 
--- | Renders an Item type into a UI widget
-renderItem :: Item -> Widget Name
-renderItem (MkLogin (Login {..})) = itemKeys loginKeys <+> itemVals vals
+-- | Renders an ItemInfo representation type into a UI widget
+renderItemInfo :: ItemInfo -> ItemListFocus -> FocusedField -> Widget Name
+renderItemInfo itemInfo listFocus field = itemKeys ks <+> if listFocus
+  then itemValsWidget
+  else maybe itemValsWidget
+             (\i -> vBox $ update i (withAttr "focused") (map strWrap vs))
+             focusIndex
+ where
+  (ks, vs)       = unbuildInfo (hidePassword itemInfo)
+  focusIndex     = V.findIndex (\(k, _) -> k == field) itemInfo
+  itemValsWidget = itemVals vs
+  update _ _ [] = []
+  update i f (x : xs) | i == 0    = f x : xs
+                      | otherwise = x : update (i - 1) f xs
+
+-- | Hide the password field when rendering ItemInfo
+hidePassword :: ItemInfo -> ItemInfo
+hidePassword = fmap apply
+ where
+  apply ("Password", val) = ("Password", obfuscate val)
+  apply t                 = t
+  obfuscate = map (const '*')
+
+-- | Build an item information rendering representation
+buildItemInfoRep :: Item -> ItemInfo
+buildItemInfoRep (MkLogin (Login {..})) = buildInfo loginKeys vals
   where vals = [_id, _name, _username, _password, _group, _url, _note]
-renderItem (MkNote (Note {..})) = itemKeys noteKeys <+> itemVals vals
+buildItemInfoRep (MkNote (Note {..})) = buildInfo noteKeys vals
   where vals = [_id, _name, _group, _note]
-renderItem (MkComplex (Complex {..})) = itemKeys (complexKeys ++ keys _note)
-  <+> itemVals (vals ++ elems _note)
+buildItemInfoRep (MkComplex (Complex {..})) = buildInfo
+  (complexKeys ++ keys _note)
+  (vals ++ elems _note)
   where vals = [_id, _name, _group]
+
+buildInfo :: [String] -> [String] -> ItemInfo
+buildInfo = V.zip `on` V.fromList
+
+unbuildInfo :: ItemInfo -> ([String], [String])
+unbuildInfo = bimap V.toList V.toList . V.unzip
 
 itemKeys :: [String] -> Widget Name
 itemKeys = padRight (Pad 2) . vBox . map str
@@ -104,6 +142,7 @@ complexKeys = ["Id", "Name", "Group"]
 buildHomepage :: [Item] -> Event -> EventM Name (Next TuiState)
 buildHomepage items vtye = handleHomepage itemList vtye
   where itemList = list HomeList (fromList items) 5
-
-handleHomepage :: List Name Item -> Event -> EventM Name (Next TuiState)
-handleHomepage items vtye = handleListEvent vtye items >>= continue . HomePage
+-- | Retrieve corresponding item info value by key
+getItemField :: FocusedField -> ItemInfo -> String
+getItemField searchKey =
+  snd . fromJust . V.find (\(key, _) -> key == searchKey)

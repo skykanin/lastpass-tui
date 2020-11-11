@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {- |
    Module      : UI.Core
    License     : GNU GPL, version 3 or above
@@ -50,7 +50,8 @@ tuiApp = App { appDraw         = drawTui
 
 focus :: TuiState -> FocusRing Name
 focus (LoginPage (form, _)) = formFocus form
-focus (HomePage  _        ) = focusRing [HomeList]
+focus (HomePage {..}      ) = focusRing [item]
+  where item = if listFocus then ItemList else ItemInfo
 
 theMap :: AttrMap
 theMap = attrMap
@@ -60,6 +61,7 @@ theMap = attrMap
   , (invalidFormInputAttr     , V.white `on` V.red)
   , (focusedFormInputAttr     , V.black `on` V.yellow)
   , (L.listSelectedFocusedAttr, V.black `on` V.yellow)
+  , (attrName "focused"       , V.black `on` V.yellow)
   ]
 
 buildInitialState :: IO TuiState
@@ -67,7 +69,8 @@ buildInitialState = pure . LoginPage $ (loginForm (User "" ""), "")
 
 drawTui :: TuiState -> [Widget Name]
 drawTui (LoginPage tuple) = uncurry drawLoginPage $ tuple
-drawTui (HomePage  list ) = drawHomepage list
+drawTui (HomePage {..}) =
+  drawHomepage itemList listFocus itemInfo focusedItemField
 
 handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
 handleTuiEvent state event = case state of
