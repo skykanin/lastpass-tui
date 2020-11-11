@@ -21,12 +21,9 @@ import           Brick.Types
 import qualified Brick.Widgets.Edit            as E
 import qualified Brick.Widgets.List            as L
 import           Brick.Util                     ( on )
-import           CLI                            ( User(..)
-                                                , endSession
-                                                )
-import           Control.Monad.IO.Class         ( liftIO )
+import           CLI                            ( User(..) )
 import qualified Graphics.Vty                  as V
-import           Graphics.Vty.Input.Events
+import           UI.Event                       ( handleTuiEvent )
 import           UI.Home
 import           UI.Login
 import           UI.Types                       ( Name(..)
@@ -72,19 +69,4 @@ drawTui (LoginPage tuple) = uncurry drawLoginPage $ tuple
 drawTui (HomePage {..}) =
   drawHomepage itemList listFocus itemInfo focusedItemField
 
-handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
-handleTuiEvent state event = case state of
-  LoginPage (form, _) -> case event of
-    VtyEvent vtye -> case vtye of
-      EvKey KEsc [] -> exitThenHalt state
-      EvKey KEnter [] -> handleLogin form vtye
-      _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
-    _ -> continue state
-  HomePage list -> case event of
-    VtyEvent vtye -> case vtye of
-      EvKey KEsc [] -> exitThenHalt state
-      _             -> handleHomepage list vtye
-    _ -> continue state
 
-exitThenHalt :: TuiState -> EventM Name (Next TuiState)
-exitThenHalt state = liftIO endSession >> halt state

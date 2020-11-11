@@ -9,14 +9,15 @@
 UI module dealing with rendering and event handling of the home page
 -}
 module UI.Home
-  ( buildHomepage
+  ( buildItemInfoRep
   , drawHomepage
-  , handleHomepage
+  , getItemField
   )
 where
 
-import           Brick.Main
-import           Brick.Types
+import           Brick.Types                    ( Padding(..)
+                                                , Widget
+                                                )
 import           Brick.Widgets.Border           ( borderWithLabel )
 import           Brick.Widgets.Core             ( (<+>)
                                                 , hLimitPercent
@@ -28,10 +29,7 @@ import           Brick.Widgets.Core             ( (<+>)
                                                 , vBox
                                                 , withAttr
                                                 )
-import           Brick.Widgets.List             ( List
-                                                , list
-                                                , listSelectedElement
-                                                , handleListEvent
+import           Brick.Widgets.List             ( listSelectedElement
                                                 , renderList
                                                 )
 import           Data.Bifunctor                 ( bimap )
@@ -139,9 +137,6 @@ noteKeys = ["Id", "Name", "Group", "Note"]
 complexKeys :: [String]
 complexKeys = ["Id", "Name", "Group"]
 
-buildHomepage :: [Item] -> Event -> EventM Name (Next TuiState)
-buildHomepage items vtye = handleHomepage itemList vtye
-  where itemList = list HomeList (fromList items) 5
 -- | Retrieve corresponding item info value by key
 getItemField :: FocusedField -> ItemInfo -> String
 getItemField searchKey =
