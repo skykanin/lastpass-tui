@@ -30,6 +30,7 @@
         ];
         libraries = [
           lastpass-cli
+          xclip
           zlib
         ];
         libraryPath = "${makeLibraryPath libraries}";
