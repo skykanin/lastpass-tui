@@ -22,11 +22,11 @@
         inherit (lib) makeLibraryPath;
         hs = haskell.packages.ghc884;
         tools = [
-          hs.brittany
+          binutils-unwrapped
           hs.ghc
           hs.cabal-install
           hs.ghcid
-          binutils-unwrapped
+          hs.ormolu
         ];
         libraries = [
           lastpass-cli
