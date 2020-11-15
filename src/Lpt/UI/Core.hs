@@ -21,8 +21,14 @@ import Brick.Types
 import Brick.Util (on)
 import qualified Brick.Widgets.Edit as E
 import qualified Brick.Widgets.List as L
-import CLI (User (..))
-import qualified Graphics.Vty as V
+import CLI
+  ( User (..),
+    checkLoginStatus,
+    getItems,
+  )
+import Data.Either (rights)
+import qualified Data.Vector as V
+import qualified Graphics.Vty as GV
 import UI.Event (handleTuiEvent)
 import UI.Home
 import UI.Login
@@ -58,17 +64,27 @@ focus (HomePage {..}) = focusRing [item]
 theMap :: AttrMap
 theMap =
   attrMap
-    V.defAttr
-    [ (E.editAttr, V.white `on` V.black),
-      (E.editFocusedAttr, V.black `on` V.yellow),
-      (invalidFormInputAttr, V.white `on` V.red),
-      (focusedFormInputAttr, V.black `on` V.yellow),
-      (L.listSelectedFocusedAttr, V.black `on` V.yellow),
-      (attrName "focused", V.black `on` V.yellow)
+    GV.defAttr
+    [ (E.editAttr, GV.white `on` GV.black),
+      (E.editFocusedAttr, GV.black `on` GV.yellow),
+      (invalidFormInputAttr, GV.white `on` GV.red),
+      (focusedFormInputAttr, GV.black `on` GV.yellow),
+      (L.listSelectedFocusedAttr, GV.black `on` GV.yellow),
+      (attrName "focused", GV.black `on` GV.yellow)
     ]
 
 buildInitialState :: IO TuiState
-buildInitialState = pure . LoginPage $ (loginForm (User "" ""), "")
+buildInitialState = do
+  loginStatus <- checkLoginStatus
+  if loginStatus
+    then do
+      eitherItems <- getItems ""
+      let items = rights eitherItems
+          itmList = L.list ItemList (V.fromList items) 5
+          itmInfo = buildItemInfoRep (head items)
+          focusedField = fst (V.head itmInfo)
+      pure $ HomePage itmList True itmInfo focusedField
+    else pure $ LoginPage (loginForm (User "" ""), "")
 
 drawTui :: TuiState -> [Widget Name]
 drawTui (LoginPage tuple) = uncurry drawLoginPage $ tuple
