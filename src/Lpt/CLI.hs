@@ -12,6 +12,7 @@
 -- Provides all the commands wrapping the lastpass-cli
 module CLI
   ( User (..),
+    checkLoginStatus,
     email,
     passwd,
     endSession,
