@@ -31,6 +31,7 @@ import Brick.Types
 import Brick.Util (clamp)
 import Brick.Widgets.List
   ( handleListEvent,
+    handleListEventVi,
     list,
     listSelectedElement,
   )
@@ -64,19 +65,16 @@ handleTuiEvent :: TuiState -> BrickEvent Name e -> EventM Name (Next TuiState)
 handleTuiEvent state event = case state of
   LoginPage (form, _) -> case event of
     VtyEvent vtye -> case vtye of
-      EvKey (KChar 'q') [MCtrl] -> halt state
+      EvKey KEsc [] -> halt state
       EvKey KEnter [] -> handleLogin form vtye
       _ -> handleFormEvent (VtyEvent vtye) form >>= continue . wrap
     _ -> continue state
   HomePage il lf ii fif -> case event of
     VtyEvent vtye -> case vtye of
-      EvKey (KChar 'q') xs ->
-        case xs of
-          [MCtrl] -> halt state
-          [MCtrl, MAlt] -> exitThenHalt state
-          _ -> continue state
-      EvKey KRight [] -> handleHomepage vtye il False ii fif
-      EvKey KLeft [] -> handleHomepage vtye il True ii fif
+      EvKey KEsc [] -> halt state
+      EvKey (KChar 'q') [MCtrl] -> exitThenHalt state
+      EvKey (KChar 'l') [] -> handleHomepage vtye il False ii fif
+      EvKey (KChar 'h') [] -> handleHomepage vtye il True ii fif
       EvKey (KChar 'c') [MCtrl] ->
         if not lf
           then do
@@ -87,12 +85,12 @@ handleTuiEvent state event = case state of
     _ -> continue state
 
 exitThenHalt :: TuiState -> EventM Name (Next TuiState)
-exitThenHalt state = liftIO endSession >> halt state
+exitThenHalt state = liftIO endSession *> halt state
 
 -- | Handles login form events
 handleLogin :: Form User Event Name -> Event -> EventM Name (Next TuiState)
 handleLogin form vtye =
-  if not $ field `elem` [EmailField, PasswdField]
+  if field `notElem` [EmailField, PasswdField]
     then continue . wrap $ form
     else do
       form' <- handleFormEvent (VtyEvent vtye) form
@@ -134,15 +132,17 @@ handleHomepage ::
 handleHomepage vtye il ilf ii ff =
   if ilf
     then do
-      il' <- handleListEvent vtye il
+      il' <- handleListEventVi handleListEvent vtye il
+      -- FIXME: What if no elements are selected (aka. list is empty)?
+      -- This code will just crash
       let itemInfo' =
             buildItemInfoRep . snd . fromJust . listSelectedElement $ il'
       let ff' = fst (V.head itemInfo')
       continue (HomePage il' ilf itemInfo' ff')
     else case vtye of
-      EvKey KUp [] ->
+      EvKey (KChar 'k') [] ->
         let nff = newFocus ff Up ii in continue (HomePage il ilf ii nff)
-      EvKey KDown [] ->
+      EvKey (KChar 'j') [] ->
         let nff = newFocus ff Down ii in continue (HomePage il ilf ii nff)
       _ -> continue (HomePage il ilf ii ff)
 
