@@ -85,12 +85,12 @@ handleTuiEvent state event = case state of
     _ -> continue state
 
 exitThenHalt :: TuiState -> EventM Name (Next TuiState)
-exitThenHalt state = liftIO endSession >> halt state
+exitThenHalt state = liftIO endSession *> halt state
 
 -- | Handles login form events
 handleLogin :: Form User Event Name -> Event -> EventM Name (Next TuiState)
 handleLogin form vtye =
-  if not $ field `elem` [EmailField, PasswdField]
+  if field `notElem` [EmailField, PasswdField]
     then continue . wrap $ form
     else do
       form' <- handleFormEvent (VtyEvent vtye) form
@@ -132,7 +132,9 @@ handleHomepage ::
 handleHomepage vtye il ilf ii ff =
   if ilf
     then do
-      il' <- handleListEvent vtye il
+      il' <- handleListEventVi handleListEvent vtye il
+      -- FIXME: What if no elements are selected (aka. list is empty)?
+      -- This code will just crash
       let itemInfo' =
             buildItemInfoRep . snd . fromJust . listSelectedElement $ il'
       let ff' = fst (V.head itemInfo')
