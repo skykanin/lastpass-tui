@@ -1,5 +1,3 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-
 -- |
 --   Module      : Main
 --   License     : GNU GPL, version 3 or above
