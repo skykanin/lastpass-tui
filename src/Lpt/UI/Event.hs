@@ -31,6 +31,7 @@ import Brick.Types
 import Brick.Util (clamp)
 import Brick.Widgets.List
   ( handleListEvent,
+    handleListEventVi,
     list,
     listSelectedElement,
   )
@@ -72,8 +73,8 @@ handleTuiEvent state event = case state of
     VtyEvent vtye -> case vtye of
       EvKey KEsc [] -> halt state
       EvKey (KChar 'q') [MCtrl] -> exitThenHalt state
-      EvKey KRight [] -> handleHomepage vtye il False ii fif
-      EvKey KLeft [] -> handleHomepage vtye il True ii fif
+      EvKey (KChar 'l') [] -> handleHomepage vtye il False ii fif
+      EvKey (KChar 'h') [] -> handleHomepage vtye il True ii fif
       EvKey (KChar 'c') [MCtrl] ->
         if not lf
           then do
@@ -137,9 +138,9 @@ handleHomepage vtye il ilf ii ff =
       let ff' = fst (V.head itemInfo')
       continue (HomePage il' ilf itemInfo' ff')
     else case vtye of
-      EvKey KUp [] ->
+      EvKey (KChar 'k') [] ->
         let nff = newFocus ff Up ii in continue (HomePage il ilf ii nff)
-      EvKey KDown [] ->
+      EvKey (KChar 'j') [] ->
         let nff = newFocus ff Down ii in continue (HomePage il ilf ii nff)
       _ -> continue (HomePage il ilf ii ff)
 
