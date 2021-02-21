@@ -26,7 +26,7 @@
           hs.ghc
           hs.cabal-install
           hs.ghcid
-          hs.ormolu
+          hs.fourmolu
         ];
         libraries = [
           lastpass-cli

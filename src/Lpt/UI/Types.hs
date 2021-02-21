@@ -1,20 +1,20 @@
--- |
---   Module      : UI.Types
---   License     : GNU GPL, version 3 or above
---   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
---   Stability   : alpha
---   Portability : portable
---
--- UI module defining core types
-module UI.Types
-  ( FocusedField,
+{- |
+   Module      : UI.Types
+   License     : GNU GPL, version 3 or above
+   Maintainer  : skykanin <3789764+skykanin@users.noreply.github.com>
+   Stability   : alpha
+   Portability : portable
+
+ UI module defining core types
+-}
+module UI.Types (
+    FocusedField,
     ItemListFocus,
     ItemInfo,
     ItemList,
     Name (..),
     TuiState (..),
-  )
-where
+) where
 
 import Brick.Forms
 import Brick.Widgets.List (List)
@@ -40,18 +40,18 @@ type ItemInfo = Vector (Key, Val)
 type FocusedField = String
 
 data TuiState
-  = LoginPage (LoginForm, Error)
-  | HomePage
-      { itemList :: ItemList,
-        listFocus :: ItemListFocus,
-        itemInfo :: ItemInfo,
-        focusedItemField :: FocusedField
-      }
+    = LoginPage (LoginForm, Error)
+    | HomePage
+        { itemList :: ItemList
+        , listFocus :: ItemListFocus
+        , itemInfo :: ItemInfo
+        , focusedItemField :: FocusedField
+        }
 
 data Name
-  = EmailField
-  | PasswdField
-  | ShowField
-  | ItemList
-  | ItemInfo
-  deriving (Eq, Ord, Show)
+    = EmailField
+    | PasswdField
+    | ShowField
+    | ItemList
+    | ItemInfo
+    deriving (Eq, Ord, Show)
