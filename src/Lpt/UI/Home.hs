@@ -10,69 +10,69 @@
  UI module dealing with rendering and event handling of the home page
 -}
 module UI.Home (
-    buildItemInfoRep,
-    drawHomepage,
-    getItemField,
+  buildItemInfoRep,
+  drawHomepage,
+  getItemField,
 ) where
 
 import Brick.Types (
-    Padding (..),
-    Widget,
+  Padding (..),
+  Widget,
  )
 import Brick.Widgets.Border (borderWithLabel)
 import Brick.Widgets.Core (
-    hLimitPercent,
-    padAll,
-    padBottom,
-    padRight,
-    str,
-    strWrap,
-    vBox,
-    withAttr,
-    (<+>),
+  hLimitPercent,
+  padAll,
+  padBottom,
+  padRight,
+  str,
+  strWrap,
+  vBox,
+  withAttr,
+  (<+>),
  )
 import Brick.Widgets.List (
-    listSelectedElement,
-    renderList,
+  listSelectedElement,
+  renderList,
  )
 import Data.Bifunctor (bimap)
 import Data.Function (on)
 import Data.HashMap.Strict (
-    elems,
-    keys,
+  elems,
+  keys,
  )
 import Data.Maybe (fromJust)
 import qualified Data.Vector as V
 import Parse.Types (
-    Complex (..),
-    Item (..),
-    Login (..),
-    Note (..),
-    getName,
+  Complex (..),
+  Item (..),
+  Login (..),
+  Note (..),
+  getName,
  )
 import UI.Types (
-    FocusedField,
-    ItemInfo,
-    ItemList,
-    ItemListFocus,
-    Name (..),
+  FocusedField,
+  ItemInfo,
+  ItemList,
+  ItemListFocus,
+  Name (..),
  )
 
 drawHomepage ::
-    ItemList -> ItemListFocus -> ItemInfo -> FocusedField -> [Widget Name]
+  ItemList -> ItemListFocus -> ItemInfo -> FocusedField -> [Widget Name]
 drawHomepage items listFocus itemInfo focusedField =
-    pure
-        (listWidget <+> itemWidget)
+  pure
+    (listWidget <+> itemWidget)
   where
     listWidget =
-        borderWithLabel (str "Items")
-            . hLimitPercent 30
-            . renderList (const renderListElement) listFocus
-            $ items
+      borderWithLabel (str "Items")
+        . hLimitPercent 30
+        . renderList (const renderListElement) listFocus
+        $ items
     itemWidget =
-        borderWithLabel
-            (label selected)
-            (renderItemWidget itemInfo listFocus focusedField)
+      borderWithLabel
+        (label selected)
+        (renderItemWidget itemInfo listFocus focusedField)
       where
         label = str . itemType . fmap snd
         itemType (Just (MkLogin _)) = "Password"
@@ -88,27 +88,27 @@ renderListElement = padRight Max . padBottom (Pad 1) . str . getName
 -- | Renders the item widget with more detailed information
 renderItemWidget :: ItemInfo -> ItemListFocus -> FocusedField -> Widget Name
 renderItemWidget itemInfo listFocus focusedField =
-    padAll 1 (renderItemInfo itemInfo listFocus focusedField)
+  padAll 1 (renderItemInfo itemInfo listFocus focusedField)
 
 -- | Renders an ItemInfo representation type into a UI widget
 renderItemInfo :: ItemInfo -> ItemListFocus -> FocusedField -> Widget Name
 renderItemInfo itemInfo listFocus field =
-    itemKeys ks
-        <+> if listFocus
-            then itemValsWidget
-            else
-                maybe
-                    itemValsWidget
-                    (\i -> vBox $ update i (withAttr "focused") (map strWrap vs))
-                    focusIndex
+  itemKeys ks
+    <+> if listFocus
+      then itemValsWidget
+      else
+        maybe
+          itemValsWidget
+          (\i -> vBox $ update i (withAttr "focused") (map strWrap vs))
+          focusIndex
   where
     (ks, vs) = unbuildInfo (hidePassword itemInfo)
     focusIndex = V.findIndex (\(k, _) -> k == field) itemInfo
     itemValsWidget = itemVals vs
     update _ _ [] = []
     update i f (x : xs)
-        | i == 0 = f x : xs
-        | otherwise = x : update (i - 1) f xs
+      | i == 0 = f x : xs
+      | otherwise = x : update (i - 1) f xs
 
 -- | Hide the password field when rendering ItemInfo
 hidePassword :: ItemInfo -> ItemInfo
@@ -120,16 +120,16 @@ hidePassword = fmap apply
 
 -- | Build an item information rendering representation
 buildItemInfoRep :: Item -> ItemInfo
-buildItemInfoRep (MkLogin (Login{..})) = buildInfo loginKeys vals
+buildItemInfoRep (MkLogin (Login {..})) = buildInfo loginKeys vals
   where
     vals = [_id, _name, _username, _password, _group, _url, _note]
-buildItemInfoRep (MkNote (Note{..})) = buildInfo noteKeys vals
+buildItemInfoRep (MkNote (Note {..})) = buildInfo noteKeys vals
   where
     vals = [_id, _name, _group, _note]
-buildItemInfoRep (MkComplex (Complex{..})) =
-    buildInfo
-        (complexKeys ++ keys _note)
-        (vals ++ elems _note)
+buildItemInfoRep (MkComplex (Complex {..})) =
+  buildInfo
+    (complexKeys ++ keys _note)
+    (vals ++ elems _note)
   where
     vals = [_id, _name, _group]
 
@@ -157,4 +157,4 @@ complexKeys = ["Id", "Name", "Group"]
 -- | Retrieve corresponding item info value by key
 getItemField :: FocusedField -> ItemInfo -> String
 getItemField searchKey =
-    snd . fromJust . V.find (\(key, _) -> key == searchKey)
+  snd . fromJust . V.find (\(key, _) -> key == searchKey)

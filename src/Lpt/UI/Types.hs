@@ -8,12 +8,12 @@
  UI module defining core types
 -}
 module UI.Types (
-    FocusedField,
-    ItemListFocus,
-    ItemInfo,
-    ItemList,
-    Name (..),
-    TuiState (..),
+  FocusedField,
+  ItemListFocus,
+  ItemInfo,
+  ItemList,
+  Name (..),
+  TuiState (..),
 ) where
 
 import Brick.Forms
@@ -40,18 +40,18 @@ type ItemInfo = Vector (Key, Val)
 type FocusedField = String
 
 data TuiState
-    = LoginPage (LoginForm, Error)
-    | HomePage
-        { itemList :: ItemList
-        , listFocus :: ItemListFocus
-        , itemInfo :: ItemInfo
-        , focusedItemField :: FocusedField
-        }
+  = LoginPage (LoginForm, Error)
+  | HomePage
+      { itemList :: ItemList
+      , listFocus :: ItemListFocus
+      , itemInfo :: ItemInfo
+      , focusedItemField :: FocusedField
+      }
 
 data Name
-    = EmailField
-    | PasswdField
-    | ShowField
-    | ItemList
-    | ItemInfo
-    deriving (Eq, Ord, Show)
+  = EmailField
+  | PasswdField
+  | ShowField
+  | ItemList
+  | ItemInfo
+  deriving (Eq, Ord, Show)

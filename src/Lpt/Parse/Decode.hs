@@ -10,22 +10,22 @@
  Provides Item Id string and Item JSON type parsers
 -}
 module Parse.Decode (
-    parseIds,
-    parseItem,
+  parseIds,
+  parseItem,
 ) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.HashMap.Strict (
-    HashMap,
-    (!),
+  HashMap,
+  (!),
  )
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as T
 import Parse.Types (
-    Item (..),
-    getGroup,
-    setGroup,
+  Item (..),
+  getGroup,
+  setGroup,
  )
 import Text.RE.TDFA.String
 
@@ -44,9 +44,9 @@ parseToMap str = toTuple . fmap unwrap . head <$> obj
 -}
 mapToItem :: String -> RawItem -> Either String Item
 mapToItem str rawItem
-    | T.null usr && note == "NoteType" = MkComplex <$> decoder str
-    | not $ T.null usr = MkLogin <$> decoder str
-    | otherwise = MkNote <$> decoder str
+  | T.null usr && note == "NoteType" = MkComplex <$> decoder str
+  | not $ T.null usr = MkLogin <$> decoder str
+  | otherwise = MkNote <$> decoder str
   where
     usr = rawItem ! "username"
     note = T.take 8 $ rawItem ! "note"
@@ -54,17 +54,17 @@ mapToItem str rawItem
 
 patchGroupField :: Item -> Item
 patchGroupField item
-    | null $ getGroup item = setGroup "none" item
-    | otherwise = item
+  | null $ getGroup item = setGroup "none" item
+  | otherwise = item
 
 -- | Parse json string to Item
 parseItem :: String -> Either String Item
 parseItem str = do
-    (strKey, rawItem) <- parseToMap str
-    item <- mapToItem strKey rawItem
-    pure $ patchGroupField item
+  (strKey, rawItem) <- parseToMap str
+  item <- mapToItem strKey rawItem
+  pure $ patchGroupField item
 
 -- | Parse out item ids from string output of 'lpass ls'
 parseIds :: String -> [String]
 parseIds =
-    map (drop 4) . mapMaybe (matchedText . (?=~ [re|id: [0-9]+|])) . lines
+  map (drop 4) . mapMaybe (matchedText . (?=~ [re|id: [0-9]+|])) . lines
